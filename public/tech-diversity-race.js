@@ -54,8 +54,6 @@ function TechDiversityRace() {
       return;
     }
 
-    // Get the value of the company we're interested in from the
-    // select item.
     var companyName = this.select.value();
 
     // Get the column of raw data for companyName.
@@ -68,7 +66,14 @@ function TechDiversityRace() {
     var labels = this.data.getColumn(0);
 
     // Colour to use for each category.
-    var colours = ['blue', 'red', 'green', 'pink', 'purple', 'yellow'];
+    var colours = [    
+      color(100, 150, 220), 
+      color(240, 120, 140),  
+      color(140, 180, 90),   
+      color(220, 180, 200),  
+      color(180, 160, 220), 
+      color(220, 200, 120) 
+    ];
 
     // Make a title.
     var title = 'Employee diversity at ' + companyName;

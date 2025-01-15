@@ -242,8 +242,8 @@ function ClimateChange() {
                    this.minTemperature,
                    this.maxTemperature,
                    0,
-                   255);
-    var blue = 255 - red;
+                   240);
+    var blue = 240 - red;
     return color(red, 0, blue, 100);
   };
 }

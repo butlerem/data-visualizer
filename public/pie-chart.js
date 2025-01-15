@@ -45,7 +45,7 @@ Arrays must be the same length!`);
       }
 
       fill(colour);
-      stroke(0);
+      stroke(255);
       strokeWeight(1);
 
       arc(this.x, this.y,
@@ -76,7 +76,7 @@ Arrays must be the same length!`);
     fill(colour);
     rect(x, y, boxWidth, boxHeight);
 
-    fill('black');
+    fill(255);
     noStroke();
     textAlign('left', 'center');
     textSize(12);

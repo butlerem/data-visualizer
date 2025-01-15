@@ -122,7 +122,7 @@ function PayGapTimeSeries() {
       if (previous != null) {
         // Draw line segment connecting previous year to current
         // year pay gap.
-        stroke(0);
+        stroke(255);
         line(this.mapYearToWidth(previous.year),
              this.mapPayGapToHeight(previous.payGap),
              this.mapYearToWidth(current.year),
@@ -147,7 +147,7 @@ function PayGapTimeSeries() {
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(255);
     noStroke();
     textAlign('center', 'center');
 

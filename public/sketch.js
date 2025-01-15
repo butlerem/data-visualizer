@@ -29,7 +29,7 @@ function setup() {
 }
 
 function draw() {
-  background(255);
+  background(40);
   if (gallery.selectedVisual instanceof SatelliteLocation) {
     if (satPositions) {
       gallery.selectedVisual.setData(satPositions);

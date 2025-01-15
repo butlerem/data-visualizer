@@ -35,8 +35,8 @@ function TechDiversityGender() {
   this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
 
   // Default visualisation colours.
-  this.femaleColour = color(255, 0 ,0);
-  this.maleColour = color(0, 255, 0);
+  this.femaleColour = color(220, 170, 180); 
+  this.maleColour = color(150, 200, 220);  
 
   // Property to represent whether data has been loaded.
   this.loaded = false;
@@ -89,7 +89,7 @@ function TechDiversityGender() {
       };
 
       // Draw the company name in the left margin.
-      fill(0);
+      fill(255);
       noStroke();
       textAlign('right', 'top');
       text(company.name,
@@ -122,7 +122,7 @@ function TechDiversityGender() {
   };
 
   this.drawCategoryLabels = function() {
-    fill(0);
+    fill(255);
     noStroke();
     textAlign('left', 'top');
     text('Female',

@@ -73,8 +73,8 @@ function PayGapByJob2017() {
     var numJobsMin = min(numJobs);
     var numJobsMax = max(numJobs);
 
-    fill(255);
-    stroke(0);
+    fill(40);
+    stroke(255);
     strokeWeight(1);
 
     for (i = 0; i < this.data.getRowCount(); i++) {

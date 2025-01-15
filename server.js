@@ -43,7 +43,7 @@ ${SAT_ID}/${OBS_LAT}/${OBS_LON}/${OBS_ALT}/${SECS}&apiKey=${API_KEY}`;
     // Handle Client Disconnect
     socket.on("disconnect", () => {
         console.log("Client Disconnected.");
-        clearInterval(invertalId);
+        clearInterval(intervalId);
     });
 });
 

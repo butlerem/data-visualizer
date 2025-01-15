@@ -35,9 +35,9 @@ function SatelliteLocation() {
 
     // If no data yet, display a message
     if (this.satData.length === 0) {
-      fill(0);
+      fill(255);
       textAlign(CENTER, CENTER);
-      textSize(16); // Or whatever size you like
+      textSize(16);
       text("Waiting for data...", width / 2, height / 2);
       return;
     }
@@ -48,8 +48,8 @@ function SatelliteLocation() {
     // Equirectangular projection logic: 
     //   longitude: -180..180 -> x: 0..width
     //   latitude:  +90..-90  -> y: 0..height (notice lat is inverted)
-    stroke(255, 0, 0);
-    fill(255, 0, 0);
+    stroke(200,0,0);
+    fill(200,0,0);
     for (let i = 0; i < this.satData.length; i++) {
       let lat = this.satData[i].lat;
       let lon = this.satData[i].lon;
@@ -62,19 +62,19 @@ function SatelliteLocation() {
 
 
       if (i === this.satData.length - 1) {
-        fill(0);
+        fill(255);
         noStroke();
-        let labelOffsetY = 15;
+        let labelOffsetY = 20;
         text(`Lat: ${nf(lat, 1, 2)}, Lon: ${nf(lon, 1, 2)}`, x, y + labelOffsetY);
-        fill(255, 0, 0);
-        stroke(255, 0, 0);
+        fill(200,0,0);
+        stroke(200,0,0);
       }
     }
   };
 
   // Simple helper for drawing title at top
   function drawTitle(txt) {
-    fill(0);
+    fill(255);
     noStroke();
     textAlign(CENTER, CENTER);
     text(txt, width / 2, 20);
