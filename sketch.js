@@ -4,7 +4,7 @@ var gallery;
 
 function setup() {
   canvasContainer = select('#app');
-  var c = createCanvas(1024, 576);
+  var c = createCanvas(1024, 512);
   c.parent('app');
 
   // Connect to node server
@@ -29,6 +29,11 @@ function setup() {
 
 function draw() {
   background(255);
+  if (gallery.selectedVisual instanceof SatelliteLocation) {
+    if (satPositions) {
+      gallery.selectedVisual.setData(satPositions);
+    }
+  }
   if (gallery.selectedVisual != null) {
     gallery.selectedVisual.draw();
   }
