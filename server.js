@@ -14,8 +14,7 @@ const OBS_LON = -75.6972; // Ottawa longitude
 const OBS_ALT = 0; // Observation altitude
 const SECS = 2; // Seconds in future to get satellite positions
 
-// Interval in milliseconds to fetch new data
-const UPDATE_INTERVAL_MS = 10_000; // 10 seconds
+const UPDATE_INTERVAL_MS = 10_000; // Interval in ms to fetch new data
 
 io.on("connection", (socket) => {
     console.log("Client connected.");
@@ -34,11 +33,9 @@ ${SAT_ID}/${OBS_LAT}/${OBS_LON}/${OBS_ALT}/${SECS}&apiKey=${API_KEY}`;
         socket.emit("satelliteData", data);
 
     } catch (error) {
-        // Log error
         console.error("Error fetching data:", error);
     }
-}, UPDATE_INTERVAL_MS); 
-// End of setInterval
+}, UPDATE_INTERVAL_MS); // End of setInterval
     // Handle Client Disconnect
     socket.on("disconnect", () => {
         console.log("Client Disconnected.");
@@ -46,7 +43,6 @@ ${SAT_ID}/${OBS_LAT}/${OBS_LON}/${OBS_ALT}/${SECS}&apiKey=${API_KEY}`;
     });
 });
 
-// Start the server
 const PORT = 3000;
 server.listen(PORT, () => {
     console.log('Server is listening on port ${PORT}');
