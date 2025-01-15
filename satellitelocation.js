@@ -13,6 +13,7 @@ function SatelliteLocation() {
   };
 
   this.preload = function () {
+    this.worldMap = loadImage('./data/world-map-2k.png');
   };
 
   this.destroy = function() {};
@@ -30,11 +31,7 @@ function SatelliteLocation() {
   };
 
   this.draw = function() {
-    // Clear or draw map background
-    background(255);
-
-    // If you have a map image, you could do:
-    // image(this.worldMap, 0, 0, width, height);
+    image(this.worldMap, 0, 0, width, height);
 
     // If no data yet, display a message
     if (this.satData.length === 0) {
@@ -43,7 +40,6 @@ function SatelliteLocation() {
       return;
     }
 
-    // Draw title if desired
     drawTitle(this.title);
 
     // Plot each position in satData
