@@ -13,7 +13,7 @@ function SatelliteLocation() {
   };
 
   this.preload = function () {
-    this.worldMap = loadImage('./data/world-map-2k.png');
+    this.worldMap = loadImage('./data/satellite-location/map.png');
   };
 
   this.destroy = function() {};

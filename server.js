@@ -1,11 +1,13 @@
 const express = require("express");
 const http = require("http");
-const socketIO = require("socket.io");
-const fetch = require("node-fetch");
+const socketio = require("socket.io");
 
 const app = express();
+
+app.use(express.static('public'));
+
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketio(server);
 
 const API_KEY = process.env.N2YO_API_KEY;
 const SAT_ID = 25544; // ID for ISS
@@ -45,5 +47,5 @@ ${SAT_ID}/${OBS_LAT}/${OBS_LON}/${OBS_ALT}/${SECS}&apiKey=${API_KEY}`;
 
 const PORT = 3000;
 server.listen(PORT, () => {
-    console.log('Server is listening on port ${PORT}');
+  console.log(`Server is listening on port ${PORT}`);
 });
