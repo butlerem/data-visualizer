@@ -4,7 +4,7 @@ var gallery;
 
 function setup() {
   canvasContainer = select('#app');
-  var c = createCanvas(1024, 512);
+  var c = createCanvas(1040, 550);
   c.parent('app');
 
   // Connect to node server

@@ -85,13 +85,13 @@ function ClimateChange() {
                                     this.maxYear - 1,
                                     this.minYear,
                                     1);
-    this.startSlider.position(400, 10);
+    this.startSlider.position(600, 70);
 
     this.endSlider = createSlider(this.minYear + 1,
                                   this.maxYear,
                                   this.maxYear,
                                   1);
-    this.endSlider.position(600, 10);
+    this.endSlider.position(800, 70);
   };
 
   this.destroy = function() {
