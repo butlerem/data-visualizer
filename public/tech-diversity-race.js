@@ -31,7 +31,10 @@ function TechDiversityRace() {
 
     // Create a select DOM element.
     this.select = createSelect();
-    this.select.position(350, 90);
+    this.select.position(1000, 120);
+    this.select.class('menu-item');
+    this.select.style('width', '120px'); 
+    this.select.style('height', '30px'); 
 
     // Fill the options with all company names.
     var companies = this.data.columns;
@@ -76,7 +79,7 @@ function TechDiversityRace() {
     ];
 
     // Make a title.
-    var title = 'Employee diversity at ' + companyName;
+    var title = 'Employee Diversity by Race at ' + companyName;
 
     // Draw the pie chart!
     this.pie.draw(col, labels, colours, title);

@@ -7,6 +7,9 @@ function TechDiversityGender() {
   // characters.
   this.id = 'tech-diversity-gender';
 
+  this.title = 'Tech Diversity by Gender';
+
+
   // Layout object to store all common plot layout parameters and
   // methods.
   this.layout = {
@@ -68,6 +71,8 @@ function TechDiversityGender() {
       console.log('Data not yet loaded');
       return;
     }
+
+    drawTitle(this.title);
 
     // Draw Female/Male labels at the top of the plot.
     this.drawCategoryLabels();
@@ -145,4 +150,11 @@ function TechDiversityGender() {
                0,
                this.layout.plotWidth());
   };
+
+  function drawTitle(txt) {
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text(txt, width / 2, 20);
+  }
 }

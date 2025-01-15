@@ -60,7 +60,7 @@ function drawAxis(layout, colour=0) {
 }
 
 function drawAxisLabels(xLabel, yLabel, layout) {
-  fill(0);
+  fill(255);
   noStroke();
   textAlign('center', 'center');
 
@@ -84,7 +84,7 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
   var range = max - min;
   var yTickStep = range / layout.numYTickLabels;
 
-  fill(0);
+  fill(255);
   noStroke();
   textAlign('right', 'center');
 
@@ -110,7 +110,7 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
   // Map function must be passed with .bind(this).
   var x = mapFunction(value);
 
-  fill(0);
+  fill(255);
   noStroke();
   textAlign('center', 'center');
 
@@ -126,5 +126,14 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
          layout.topMargin,
          x,
          layout.bottomMargin);
+  }
+
+  // Helper function to draw a title with margin
+  function drawTitle(txt, margin = 40) {
+    fill(255);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textSize(16); // S
+    text(txt, width / 2, margin / 2); 
   }
 }

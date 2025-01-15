@@ -62,7 +62,7 @@ Arrays must be the same length!`);
     if (title) {
       noStroke();
       textAlign('center', 'center');
-      textSize(24);
+      textSize(16);
       text(title, this.x, this.y - this.diameter * 0.6);
     }
   };
