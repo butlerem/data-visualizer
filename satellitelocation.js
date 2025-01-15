@@ -3,96 +3,81 @@ function SatelliteLocation() {
   this.id = 'satellite-map';
   this.title = 'Real-time Satellite Position.';
 
-  // Current satellite lat/lon
-  this.satLat = null;
-  this.satLon = null;
-
   this.worldMap = null;
 
-  this.layout = {
-    marginSize: marginSize,
-    leftMargin: marginSize * 2,
-    rightMargin: width - marginSize,
-    topMargin: marginSize,
-    bottomMargin: height - marginSize * 2,
-    pad: 5,
-    };
-
-    // Boolean to enable/disable background grid.
-    grid: true,
+  // Store data
+  this.satData = [];
 
   this.setup = function() {
     textSize(16);
   };
 
-  this.destroy = function() {
+  this.preload = function () {
+  };
+
+  this.destroy = function() {};
+  
+  // Method to receive new positions from server
+  this.setData = function(positions) {
+    if (!positions || positions.length === 0) return;
+    let p = positions [0];
+
+    this.satData.push({
+      lat: p.satlatitude,
+      lon: p.satlongitude,
+      t: Date.now()
+    });
   };
 
   this.draw = function() {
-    this.drawTitle();
+    // Clear or draw map background
+    background(255);
 
-    // Draw all y-axis labels.
-    drawYAxisTickLabels(this.minPayGap,
-                        this.maxPayGap,
-                        this.layout,
-                        this.mapPayGapToHeight.bind(this),
-                        0);
+    // If you have a map image, you could do:
+    // image(this.worldMap, 0, 0, width, height);
 
-    // Draw x and y axis.
-    drawAxis(this.layout);
+    // If no data yet, display a message
+    if (this.satData.length === 0) {
+      fill(0);
+      text("Waiting for satellite data...", 20, 40);
+      return;
+    }
 
-    // Draw x and y axis labels.
-    drawAxisLabels(this.xAxisLabel,
-                   this.yAxisLabel,
-                   this.layout);
+    // Draw title if desired
+    drawTitle(this.title);
 
-    // Plot all pay gaps between startYear and endYear using the width
-    // of the canvas minus margins.
-    var previous;
-    var numYears = this.endYear - this.startYear;
+    // Plot each position in satData
+    // Equirectangular projection logic: 
+    //   longitude: -180..180 -> x: 0..width
+    //   latitude:  +90..-90  -> y: 0..height (notice lat is inverted)
+    stroke(255, 0, 0);
+    fill(255, 0, 0);
+    for (let i = 0; i < this.satData.length; i++) {
+      let lat = this.satData[i].lat;
+      let lon = this.satData[i].lon;
+      
+      let x = map(lon, -180, 180, 0, width);
+      let y = map(lat, 90, -90, 0, height);
 
-    // Loop over all rows and draw a line from the previous value to
-    // the current.
-    for (var i = 0; i < this.data.getRowCount(); i++) {
+      // Draw a tiny ellipse for the satellite position
+      ellipse(x, y, 5, 5);
 
-      // Create an object to store data for the current year.
-      var current = {
-        // Convert strings to numbers.
-        'year': this.data.getNum(i, 'year'),
-        'payGap': this.data.getNum(i, 'pay_gap')
-      };
-
-      if (previous != null) {
-        // Draw line segment connecting previous year to current
-        // year pay gap.
-        stroke(0);
-        line(this.mapYearToWidth(previous.year),
-             this.mapPayGapToHeight(previous.payGap),
-             this.mapYearToWidth(current.year),
-             this.mapPayGapToHeight(current.payGap));
-
-        // The number of x-axis labels to skip so that only
-        // numXTickLabels are drawn.
-        var xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
-
-        // Draw the tick label marking the start of the previous year.
-        if (i % xLabelSkip == 0) {
-          drawXAxisTickLabel(previous.year, this.layout,
-                             this.mapYearToWidth.bind(this));
-        }
+      // If you'd like to label the last known position, do that here:
+      if (i === this.satData.length - 1) {
+        fill(0);
+        noStroke();
+        text(`Lat: ${nf(lat, 1, 2)}, Lon: ${nf(lon, 1, 2)}`, x + 10, y);
+        fill(255, 0, 0);
+        stroke(255, 0, 0);
       }
-
-      // Assign current year to previous year so that it is available
-      // during the next iteration of this loop to give us the start
-      // position of the next line segment.
-      previous = current;
     }
   };
 
-  this.drawTitle = function() {
+  // Simple helper for drawing title at top
+  function drawTitle(txt) {
     fill(0);
     noStroke();
-    textAlign('center', 'center');
-    text(this.title, width / 2, 30);
-  };
+    textAlign(CENTER, CENTER);
+    text(txt, width / 2, 20);
+  }
 }
