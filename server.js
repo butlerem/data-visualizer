@@ -4,6 +4,8 @@ const socketio = require("socket.io");
 
 const app = express();
 
+require('dotenv').config();
+
 app.use(express.static('public'));
 
 const server = http.createServer(app);

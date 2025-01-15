@@ -12,6 +12,7 @@ function setup() {
 
   // Listen for satellite data updates
   socket.on("satelliteData", (data) => {
+    console.log("Received from server:", data);
     satPositions = data.positions;
   });
   
