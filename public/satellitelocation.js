@@ -1,7 +1,7 @@
 function SatelliteLocation() {
   this.name = 'Satellite 2D Map';
   this.id = 'satellite-map';
-  this.title = 'Real-time Satellite Position.';
+  this.title = 'Real-time International Space Station Position';
 
   this.worldMap = null;
 
@@ -36,7 +36,9 @@ function SatelliteLocation() {
     // If no data yet, display a message
     if (this.satData.length === 0) {
       fill(0);
-      text("Waiting for satellite data...", 20, 40);
+      textAlign(CENTER, CENTER);
+      textSize(16); // Or whatever size you like
+      text("Waiting for data...", width / 2, height / 2);
       return;
     }
 
@@ -58,11 +60,12 @@ function SatelliteLocation() {
       // Draw a tiny ellipse for the satellite position
       ellipse(x, y, 5, 5);
 
-      // If you'd like to label the last known position, do that here:
+
       if (i === this.satData.length - 1) {
         fill(0);
         noStroke();
-        text(`Lat: ${nf(lat, 1, 2)}, Lon: ${nf(lon, 1, 2)}`, x + 10, y);
+        let labelOffsetY = 15;
+        text(`Lat: ${nf(lat, 1, 2)}, Lon: ${nf(lon, 1, 2)}`, x, y + labelOffsetY);
         fill(255, 0, 0);
         stroke(255, 0, 0);
       }
