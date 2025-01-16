@@ -7,6 +7,9 @@ function PayGapByJob2017() {
   // characters.
   this.id = 'pay-gap-by-job-2017';
 
+  this.title = 'Pay Gap by Job in 2017';
+
+
   // Property to represent whether data has been loaded.
   this.loaded = false;
 
@@ -43,6 +46,8 @@ function PayGapByJob2017() {
 
     // Draw the axes.
     this.addAxes();
+
+    drawTitle(this.title);
 
     // Get data from the table object.
     var jobs = this.data.getColumn('job_subtype');

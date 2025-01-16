@@ -7,6 +7,8 @@ function ClimateChange() {
   // characters.
   this.id = 'climate-change';
 
+  this.title = 'Climate Change in ℃ Per Year';
+
   // Names for each axis.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '℃';
@@ -85,14 +87,20 @@ function ClimateChange() {
                                     this.maxYear - 1,
                                     this.minYear,
                                     1);
-    this.startSlider.position(600, 70);
+    this.startSlider.position(980, 70);
 
     this.endSlider = createSlider(this.minYear + 1,
                                   this.maxYear,
                                   this.maxYear,
                                   1);
-    this.endSlider.position(800, 70);
+    this.endSlider.position(1110, 70);
+    this.startSlider.style('width', '100px'); 
+    this.startSlider.style('height', '5px'); 
+    this.endSlider.style('width', '100px');
+    this.endSlider.style('height', '5px'); 
+
   };
+
 
   this.destroy = function() {
     this.startSlider.remove();
@@ -121,6 +129,8 @@ function ClimateChange() {
 
     // Draw x and y axis.
     drawAxis(this.layout);
+
+    drawTitle(this.title);
 
     // Draw x and y axis labels.
     drawAxisLabels(this.xAxisLabel,

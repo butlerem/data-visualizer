@@ -1,7 +1,7 @@
 function SatelliteLocation() {
   this.name = 'Satellite 2D Map';
   this.id = 'satellite-map';
-  this.title = 'Real-time International Space Station Position';
+  this.title = 'Current International Space Station Position on World Map';
 
   this.worldMap = null;
 
@@ -33,6 +33,8 @@ function SatelliteLocation() {
   this.draw = function() {
     image(this.worldMap, 0, 0, width, height);
 
+    drawTitle(this.title);
+
     // If no data yet, display a message
     if (this.satData.length === 0) {
       fill(255);
@@ -41,8 +43,6 @@ function SatelliteLocation() {
       text("Waiting for data...", width / 2, height / 2);
       return;
     }
-
-    drawTitle(this.title);
 
     // Plot each position in satData
     // Equirectangular projection logic: 
@@ -60,7 +60,6 @@ function SatelliteLocation() {
       // Draw a tiny ellipse for the satellite position
       ellipse(x, y, 5, 5);
 
-
       if (i === this.satData.length - 1) {
         fill(255);
         noStroke();
@@ -71,12 +70,4 @@ function SatelliteLocation() {
       }
     }
   };
-
-  // Simple helper for drawing title at top
-  function drawTitle(txt) {
-    fill(255);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text(txt, width / 2, 20);
-  }
 }

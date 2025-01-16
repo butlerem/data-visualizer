@@ -127,7 +127,7 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
          x,
          layout.bottomMargin);
   }
-
+}
   // Helper function to draw a title with margin
   function drawTitle(txt, margin = 40) {
     fill(255);
@@ -136,4 +136,3 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
     textSize(16); // S
     text(txt, width / 2, margin / 2); 
   }
-}

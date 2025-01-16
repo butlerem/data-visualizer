@@ -8,7 +8,7 @@ function PayGapTimeSeries() {
   this.id = 'pay-gap-timeseries';
 
   // Title to display above the plot.
-  this.title = 'Gender Pay Gap: Average difference between male and female pay.';
+  this.title = 'Average Percent Difference Between Male and Female Pay Per Year';
 
     // Names for each axis.
   this.xAxisLabel = 'year';
@@ -85,8 +85,7 @@ function PayGapTimeSeries() {
       return;
     }
 
-    // Draw the title above the plot.
-    this.drawTitle();
+    drawTitle(this.title);
 
     // Draw all y-axis labels.
     drawYAxisTickLabels(this.minPayGap,
@@ -144,16 +143,6 @@ function PayGapTimeSeries() {
       // position of the next line segment.
       previous = current;
     }
-  };
-
-  this.drawTitle = function() {
-    fill(255);
-    noStroke();
-    textAlign('center', 'center');
-
-    text(this.title,
-         (this.layout.plotWidth() / 2) + this.layout.leftMargin,
-         this.layout.topMargin - (this.layout.marginSize / 2));
   };
 
   this.mapYearToWidth = function(value) {
