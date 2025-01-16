@@ -12,6 +12,15 @@ function PayGapByJob2017() {
   this.xAxisLabel = '% Female in Role';
   this.yAxisLabel = 'Pay Gap (Women vs. Men)';
 
+  // Clors for points
+  this.colors = [
+    color(70, 70, 140, 255),   // Deep steel blue
+    color(50, 100, 140, 255),  // Cool teal blue
+    color(50, 140, 80, 255),   // Rich forest green
+    color(140, 140, 50, 255),  // Muted mustard yellow
+    color(140, 30, 50, 255),   // Deep crimson red
+  ];
+
   // Preload the data
   this.preload = function () {
     var self = this;
@@ -56,6 +65,7 @@ function PayGapByJob2017() {
     strokeWeight(1);
 
     for (let i = 0; i < this.data.getRowCount(); i++) {
+      fill(this.colors[i % this.colors.length]); // Cycle through pastel colors
       ellipse(
         map(propFemale[i], 0, 100, this.pad, width - this.pad),
         map(payGap[i], -20, 20, height - this.pad, this.pad),
@@ -69,7 +79,7 @@ function PayGapByJob2017() {
     stroke(255);
     textSize(12);
     textAlign(CENTER, CENTER);
-
+    
     // Draw vertical axis (y-axis) at the center
     line(width / 2, this.pad, width / 2, height - this.pad);
 

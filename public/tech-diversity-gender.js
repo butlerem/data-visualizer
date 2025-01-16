@@ -1,14 +1,14 @@
 function TechDiversityGender() {
   this.name = 'Tech Diversity: Gender';
   this.id = 'tech-diversity-gender';
-  this.title = 'Tech Diversity by Gender';
-
+  this.title = 'Tech Diversity by Gender Percentage';
+  
   this.layout = {
     // Locations of margin positions. Left and bottom have double margin
     // size due to axis and tick labels.
-    leftMargin: 130,
+    leftMargin: 120,
     rightMargin: width,
-    topMargin: 30,
+    topMargin: 60,
     bottomMargin: height,
     pad: 5,
 
@@ -29,8 +29,8 @@ function TechDiversityGender() {
   this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
 
   // Default visualisation colours.
-  this.femaleColour = color(220, 170, 180); 
-  this.maleColour = color(150, 200, 220);  
+  this.femaleColour = color(50, 120, 140, 255); 
+  this.maleColour = color(70, 70, 140, 255);  
 
   // Property to represent whether data has been loaded.
   this.loaded = false;
@@ -123,16 +123,17 @@ function TechDiversityGender() {
     textAlign('left', 'top');
     text('Female',
          this.layout.leftMargin,
-         this.layout.pad);
+         this.layout.pad + 35); // Move down by 30px
     textAlign('center', 'top');
     text('50%',
          this.midX,
-         this.layout.pad);
+         this.layout.pad + 35); // Move down by 30px
     textAlign('right', 'top');
     text('Male',
          this.layout.rightMargin,
-         this.layout.pad);
-  };
+         this.layout.pad + 35); // Move down by 30px
+};
+
 
   this.mapPercentToWidth = function(percent) {
     return map(percent,

@@ -1,7 +1,7 @@
-function SatelliteLocation() {
-  this.name = 'World Satellite Location';
-  this.id = 'satellite-map';
-  this.title = 'Current International Space Station Position on World Map';
+function CanadaSatellites() {
+  this.name = 'Satellite Map Canada';
+  this.id = 'canada-map';
+  this.title = 'Current Satellite Positions on Canada Map';
   this.worldMap = null;
 
   this.satData = [];
@@ -11,7 +11,7 @@ function SatelliteLocation() {
   };
 
   this.preload = function () {
-    this.worldMap = loadImage('./data/satellite-location/world.png');
+    this.worldMap = loadImage('./data/satellite-location/canada.png');
   };
 
   this.destroy = function() {};

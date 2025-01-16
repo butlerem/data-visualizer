@@ -26,6 +26,7 @@ function setup() {
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new SatelliteLocation());
+  gallery.addVisual(new CanadaSatellites());
 }
 
 function draw() {
