@@ -1,11 +1,10 @@
 function SatelliteLocation() {
+  
   this.name = 'Satellite 2D Map';
   this.id = 'satellite-map';
   this.title = 'Current International Space Station Position on World Map';
-
   this.worldMap = null;
 
-  // Store data
   this.satData = [];
 
   this.setup = function() {

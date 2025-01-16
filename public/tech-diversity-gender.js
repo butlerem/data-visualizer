@@ -1,17 +1,8 @@
 function TechDiversityGender() {
-
-  // Name for the visualisation to appear in the menu bar.
   this.name = 'Tech Diversity: Gender';
-
-  // Each visualisation must have a unique ID with no special
-  // characters.
   this.id = 'tech-diversity-gender';
-
   this.title = 'Tech Diversity by Gender';
 
-
-  // Layout object to store all common plot layout parameters and
-  // methods.
   this.layout = {
     // Locations of margin positions. Left and bottom have double margin
     // size due to axis and tick labels.

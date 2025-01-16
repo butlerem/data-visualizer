@@ -1,22 +1,14 @@
 function ClimateChange() {
-
-  // Name for the visualisation to appear in the menu bar.
+  
   this.name = 'Climate Change';
-
-  // Each visualisation must have a unique ID with no special
-  // characters.
   this.id = 'climate-change';
-
   this.title = 'Climate Change in ℃ Per Year';
 
-  // Names for each axis.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '℃';
 
   var marginSize = 35;
 
-  // Layout object to store all common plot layout parameters and
-  // methods.
   this.layout = {
     marginSize: marginSize,
 

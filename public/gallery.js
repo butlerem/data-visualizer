@@ -1,5 +1,5 @@
 function Gallery() {
-
+  
   this.visuals = [];
   this.selectedVisual = null;
   var self = this;

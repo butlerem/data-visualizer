@@ -1,19 +1,10 @@
 function PayGapByJob2017() {
-
-  // Name for the visualisation to appear in the menu bar.
+  
   this.name = 'Pay gap by job: 2017';
-
-  // Each visualisation must have a unique ID with no special
-  // characters.
   this.id = 'pay-gap-by-job-2017';
-
   this.title = 'Pay Gap by Job in 2017';
-
-
-  // Property to represent whether data has been loaded.
   this.loaded = false;
 
-  // Graph properties.
   this.pad = 20;
   this.dotSizeMin = 15;
   this.dotSizeMax = 40;
