@@ -1,5 +1,4 @@
 function PayGapByJob2017() {
-  
   this.name = 'Pay gap by job: 2017';
   this.id = 'pay-gap-by-job-2017';
   this.title = 'Pay Gap by Job in 2017';
@@ -9,99 +8,107 @@ function PayGapByJob2017() {
   this.dotSizeMin = 15;
   this.dotSizeMax = 40;
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
-  this.preload = function() {
+  // Axis labels
+  this.xAxisLabel = '% Female in Role';
+  this.yAxisLabel = 'Pay Gap (Women vs. Men)';
+
+  // Preload the data
+  this.preload = function () {
     var self = this;
     this.data = loadTable(
-      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
-      function(table) {
+      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv',
+      'csv',
+      'header',
+      function (table) {
         self.loaded = true;
-      });
-
+      }
+    );
   };
 
-  this.setup = function() {
-  };
+  this.setup = function () {};
 
-  this.destroy = function() {
-  };
+  this.destroy = function () {};
 
-  this.draw = function() {
+  this.draw = function () {
     if (!this.loaded) {
       console.log('Data not yet loaded');
       return;
     }
 
-    // Draw the axes.
-    this.addAxes();
-
+    // Draw the title
     drawTitle(this.title);
 
-    // Get data from the table object.
-    var jobs = this.data.getColumn('job_subtype');
-    var propFemale = this.data.getColumn('proportion_female');
-    var payGap = this.data.getColumn('pay_gap');
-    var numJobs = this.data.getColumn('num_jobs');
+    // Draw the centered axes with tick marks and labels
+    this.addAxes();
 
-    // Convert numerical data from strings to numbers.
-    propFemale = stringsToNumbers(propFemale);
-    payGap = stringsToNumbers(payGap);
-    numJobs = stringsToNumbers(numJobs);
+    // Get data from the table object
+    let propFemale = stringsToNumbers(this.data.getColumn('proportion_female'));
+    let payGap = stringsToNumbers(this.data.getColumn('pay_gap'));
+    let numJobs = stringsToNumbers(this.data.getColumn('num_jobs'));
 
-    // Set ranges for axes.
-    //
-    // Use full 100% for x-axis (proportion of women in roles).
-    var propFemaleMin = 0;
-    var propFemaleMax = 100;
+    // Find the smallest and largest number of jobs
+    let numJobsMin = min(numJobs);
+    let numJobsMax = max(numJobs);
 
-    // For y-axis (pay gap) use a symmetrical axis equal to the
-    // largest gap direction so that equal pay (0% pay gap) is in the
-    // centre of the canvas. Above the line means men are paid
-    // more. Below the line means women are paid more.
-    var payGapMin = -20;
-    var payGapMax = 20;
-
-    // Find smallest and largest numbers of people across all
-    // categories to scale the size of the dots.
-    var numJobsMin = min(numJobs);
-    var numJobsMax = max(numJobs);
-
+    // Draw data points
     fill(40);
     stroke(255);
     strokeWeight(1);
 
-    for (i = 0; i < this.data.getRowCount(); i++) {
-      // Draw an ellipse for each point.
-      // x = propFemale
-      // y = payGap
-      // size = numJobs
+    for (let i = 0; i < this.data.getRowCount(); i++) {
       ellipse(
-        map(propFemale[i], propFemaleMin, propFemaleMax,
-            this.pad, width - this.pad),
-        map(payGap[i], payGapMin, payGapMax,
-            height - this.pad, this.pad),
-        map(numJobs[i], numJobsMin, numJobsMax,
-            this.dotSizeMin, this.dotSizeMax)
+        map(propFemale[i], 0, 100, this.pad, width - this.pad),
+        map(payGap[i], -20, 20, height - this.pad, this.pad),
+        map(numJobs[i], numJobsMin, numJobsMax, this.dotSizeMin, this.dotSizeMax)
       );
     }
   };
 
   this.addAxes = function () {
-    stroke(200);
+    fill(255);
+    stroke(255);
+    textSize(12);
+    textAlign(CENTER, CENTER);
 
-    // Add vertical line.
-    line(width / 2,
-         0 + this.pad,
-         width / 2,
-         height - this.pad);
+    // Draw vertical axis (y-axis) at the center
+    line(width / 2, this.pad, width / 2, height - this.pad);
 
-    // Add horizontal line.
-    line(0 + this.pad,
-         height / 2,
-         width - this.pad,
-         height / 2);
+    // Draw horizontal axis (x-axis) at the center
+    line(this.pad, height / 2, width - this.pad, height / 2);
+
+    // Draw y-axis tick marks and labels
+    let yTicks = 10;
+    for (let i = 0; i <= yTicks; i++) {
+      let y = map(i, 0, yTicks, height - this.pad, this.pad);
+      let value = map(i, 0, yTicks, -20, 20).toFixed(0); // Pay gap range
+      // Tick marks
+      line(width / 2 - 5, y, width / 2 + 5, y);
+      // Labels
+      text(value, width / 2 - 25, y);
+    }
+
+    // Draw x-axis tick marks and labels
+    let xTicks = 10;
+    for (let i = 0; i <= xTicks; i++) {
+      let x = map(i, 0, xTicks, this.pad, width - this.pad);
+      let value = map(i, 0, xTicks, 0, 100).toFixed(0); // % female range
+      // Tick marks
+      line(x, height / 2 - 5, x, height / 2 + 5);
+      // Labels
+      text(value, x, height / 2 + 20);
+    }
+
+    // Draw axis labels
+    textSize(16);
+
+    // X-axis label
+    text(this.xAxisLabel, width / 2, height - this.pad / 2);
+
+    // Y-axis label (rotated)
+    push();
+    translate(this.pad / 2, height / 2);
+    rotate(-PI / 2);
+    text(this.yAxisLabel, 0, 0);
+    pop();
   };
 }
