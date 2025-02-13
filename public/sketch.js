@@ -17,6 +17,7 @@ function setup() {
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new EducationCompletionRate());
+  gallery.addVisual(new PovertyGap());
 
 }
 

@@ -41,8 +41,11 @@ function EducationCompletionRate() {
     textSize(16);
 
     let years = this.data.columns.slice(1); // Ignore 'Country Name' column
-    this.startYear = int(years[0]);
-    this.endYear = int(years[years.length - 1]);
+    this.globalStartYear = int(years[0]);  // 1990
+    this.globalEndYear = int(years[years.length - 1]); // 2023
+
+    this.startYear = this.globalStartYear; // Default start year (1990)
+    this.endYear = this.globalEndYear;     // Default end year (2023)
 
     this.aggregatedData = {};
     this.countData = {}; // To count valid entries per year
@@ -71,18 +74,28 @@ function EducationCompletionRate() {
       }
     }
 
-    // Get min/max values for scaling
+    // Set Y-axis to start at 65%
     this.minEducation = 65;
     this.maxEducation = 100;
+
+    // ** Create a slider for zooming into the years **
+    this.yearSlider = createSlider(this.globalStartYear, 2020, this.globalStartYear, 1);
+    this.yearSlider.position(20, height - 30);
+    this.yearSlider.style('width', '200px');
   };
 
-  this.destroy = function () { };
+  this.destroy = function () { 
+    this.yearSlider.remove(); // Remove slider when switching visualizations
+  };
 
   this.draw = function () {
     if (!this.loaded) {
       console.log('Data not yet loaded');
       return;
     }
+
+      // Update start year from slider value (end year is always 2023)
+      this.startYear = this.yearSlider.value();
 
     drawTitle(this.title);
     drawYAxisTickLabels(this.minEducation,
