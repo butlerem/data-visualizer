@@ -1,6 +1,6 @@
-let socket;
-let satPositions;
-var gallery;
+let gallery;
+const apiKey = "0ae792d9-3c7b-407a-8bf8-8fc8aea61aa1";
+const apiUrl = "https://services.nvd.nist.gov/rest/json/cves/1.0";
 
 function setup() {
   canvasContainer = select('#app');
@@ -16,6 +16,8 @@ function setup() {
   gallery.addVisual(new PayGapByJob2017());
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
+  gallery.addVisual(new EducationCompletionRate());
+
 }
 
 function draw() {

@@ -1,16 +1,13 @@
 function PayGapTimeSeries() {
-  
   this.name = 'Pay gap: 1997-2017';
   this.id = 'pay-gap-timeseries';
   this.title = 'Average Percent Difference Between Male and Female Pay Per Year';
 
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
-
   var marginSize = 35;
 
-  // Layout object to store all common plot layout parameters and
-  // methods.
+  // Layout object to store all common plot layout parameters and methods.
   this.layout = {
     marginSize: marginSize,
 
