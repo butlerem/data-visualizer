@@ -1,9 +1,9 @@
 let gallery;
 
 function setup() {
-  canvasContainer = select('#app');
-  var c = createCanvas(1040, 550); // Create a canvas of size 1040x550
-  c.parent('app'); // Attach the canvas to the HTML element with id 'app'
+  canvasContainer = select("#app");
+  var c = createCanvas(1600, 700); // Create a canvas of size 1200x700
+  c.parent("app"); // Attach the canvas to the HTML element with id 'app'
 
   // Create a new gallery object.
   gallery = new Gallery();
@@ -29,16 +29,21 @@ function setup() {
 
 function draw() {
   background(40); // Set the background color to dark gray
+
+  let gap = 50; // Space between the two visuals
+  let visualWidth = width / 2 - gap / 2; // Each visual fits within its half
+
   if (gallery.selectedVisual != null) {
-    push(); // Save the current drawing state
-    translate(0, 0); // Draw the first visual on the left half
-    gallery.selectedVisual.draw(); // Call the draw method of the first visual
-    pop(); // Restore the previous drawing state
+    push();
+    translate(visualWidth - width / 2, 0); // Position left visual correctly
+    gallery.selectedVisual.draw();
+    pop();
   }
+
   if (gallery.selectedVisual2 != null) {
-    push(); // Save the current drawing state
-    translate(width / 2, 0); // Draw the second visual on the right half
-    gallery.selectedVisual2.draw(); // Call the draw method of the second visual
-    pop(); // Restore the previous drawing state
+    push();
+    translate(visualWidth + gap, 0); // Position right visual with spacing
+    gallery.selectedVisual2.draw();
+    pop();
   }
 }

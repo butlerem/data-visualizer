@@ -1,52 +1,66 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
 
 * {
-    color: rgb(241, 241, 241); /* Set text color to white for all elements */
+  color: rgb(241, 241, 241); /* Set text color to white for all elements */
 }
 
-body{
-    font-family: 'Inter', sans-serif; 
-    background-color: #1f1e1e; 
-    margin: 0;
-    padding: 0;
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #1f1e1e;
+  margin: 0;
+  padding: 0;
 }
 
 h1 {
-    text-align: center;
-    margin: 20px 0 20px 0;
-    font-size: 20px;
-  }
+  text-align: center;
+  margin: 20px 0 20px 0;
+  font-size: 20px;
+}
 
 .menu-item {
-    width: 200px;
-    height: 50px;
-    font-size: 14px; 
-    color: #d6d6d6;
-    margin: 5px 5px 5px 5px;
-    background-color: #464646; 
-    text-align: center;
-    line-height: 50px; 
-    border-radius: 8px; 
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  width: 200px;
+  height: 50px;
+  font-size: 14px;
+  color: #d6d6d6;
+  margin: 5px 5px 5px 5px;
+  background-color: #464646;
+  text-align: center;
+  line-height: 50px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .container {
   display: flex;
-  
+}
+
+.visual-container {
+  display: flex;
+  justify-content: space-between; /* Adds space between visuals */
+  align-items: center;
+  gap: 20px; /* Adjust spacing between visuals */
+  width: 100%;
+}
+
+.visual-item {
+  flex: 1; /* Makes each visual take equal space */
+  max-width: 48%; /* Ensures they don’t overlap */
+  min-width: 300px; /* Prevents visuals from becoming too small */
+  height: auto;
 }
 
 ul {
-    padding: 0; 
-    list-style: none; 
-    margin: 0;
+  padding: 0;
+  list-style: none;
+  margin: 0;
 }
 
 .hover {
-    background-color: #555555;
+  background-color: #555555;
 }
 
-.selected{
-    background-color: #616161;
-    color: #ffffff;
+.selected {
+  background-color: #616161;
+  color: #ffffff;
 }
