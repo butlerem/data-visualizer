@@ -1,66 +1,42 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
-
-* {
-  color: rgb(241, 241, 241); /* Set text color to white for all elements */
-}
-
 body {
   font-family: "Inter", sans-serif;
-  background-color: #1f1e1e;
+  background-color: #121212;
+  color: #fff;
   margin: 0;
-  padding: 0;
+  display: flex;
 }
-
-h1 {
-  text-align: center;
-  margin: 20px 0 20px 0;
-  font-size: 20px;
-}
-
-.menu-item {
+.menu ul {
   width: 200px;
-  height: 50px;
-  font-size: 14px;
-  color: #d6d6d6;
-  margin: 5px 5px 5px 5px;
-  background-color: #464646;
-  text-align: center;
-  line-height: 50px;
-  border-radius: 8px;
+  background: #1e1e1e;
+  padding: 20px;
+  height: 100vh;
+}
+.menu ul li {
+  display: block;
+  color: #bbb;
+  text-decoration: none;
+  padding: 10px 0;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
-.container {
-  display: flex;
+.menu ul li:hover {
+  color: #fff;
 }
-
-.visual-container {
-  display: flex;
-  justify-content: space-between; /* Adds space between visuals */
-  align-items: center;
-  gap: 20px; /* Adjust spacing between visuals */
-  width: 100%;
-}
-
-.visual-item {
-  flex: 1; /* Makes each visual take equal space */
-  max-width: 48%; /* Ensures they don’t overlap */
-  min-width: 300px; /* Prevents visuals from becoming too small */
-  height: auto;
-}
-
-ul {
-  padding: 0;
-  list-style: none;
-  margin: 0;
-}
-
-.hover {
-  background-color: #555555;
-}
-
 .selected {
   background-color: #616161;
   color: #ffffff;
+}
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}
+.card {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+canvas {
+  width: 100% !important;
+  height: 300px !important;
 }
