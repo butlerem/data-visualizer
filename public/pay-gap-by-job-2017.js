@@ -1,33 +1,32 @@
 function PayGapByJob2017() {
-  this.name = 'Pay gap by job: 2017';
-  this.id = 'pay-gap-by-job-2017';
-  this.title = 'Pay Gap by Job in 2017';
+  this.name = "Pay Gap By Job";
+  this.id = "pay-gap-by-job-2017";
+  this.title = "Pay Gap by Job in 2017";
   this.loaded = false;
+
+  this.xAxisLabel = "% Female in Role";
+  this.yAxisLabel = "Pay Gap (Women vs. Men)";
 
   this.pad = 20;
   this.dotSizeMin = 15;
   this.dotSizeMax = 40;
 
-  // Axis labels
-  this.xAxisLabel = '% Female in Role';
-  this.yAxisLabel = 'Pay Gap (Women vs. Men)';
-
   // Clors for points
   this.colors = [
-    color(70, 70, 140, 255),   // Deep steel blue
-    color(50, 100, 140, 255),  // Cool teal blue
-    color(50, 140, 80, 255),   // Rich forest green
-    color(140, 140, 50, 255),  // Muted mustard yellow
-    color(140, 30, 50, 255),   // Deep crimson red
+    color(70, 70, 140, 255), // Deep steel blue
+    color(50, 100, 140, 255), // Cool teal blue
+    color(50, 140, 80, 255), // Rich forest green
+    color(140, 140, 50, 255), // Muted mustard yellow
+    color(140, 30, 50, 255), // Deep crimson red
   ];
 
   // Preload the data
   this.preload = function () {
     var self = this;
     this.data = loadTable(
-      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv',
-      'csv',
-      'header',
+      "./data/pay-gap/occupation-hourly-pay-by-gender-2017.csv",
+      "csv",
+      "header",
       function (table) {
         self.loaded = true;
       }
@@ -40,20 +39,17 @@ function PayGapByJob2017() {
 
   this.draw = function () {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      console.log("Data not yet loaded");
       return;
     }
-
-    // Draw the title
-    drawTitle(this.title);
 
     // Draw the centered axes with tick marks and labels
     this.addAxes();
 
     // Get data from the table object
-    let propFemale = stringsToNumbers(this.data.getColumn('proportion_female'));
-    let payGap = stringsToNumbers(this.data.getColumn('pay_gap'));
-    let numJobs = stringsToNumbers(this.data.getColumn('num_jobs'));
+    let propFemale = stringsToNumbers(this.data.getColumn("proportion_female"));
+    let payGap = stringsToNumbers(this.data.getColumn("pay_gap"));
+    let numJobs = stringsToNumbers(this.data.getColumn("num_jobs"));
 
     // Find the smallest and largest number of jobs
     let numJobsMin = min(numJobs);
@@ -69,7 +65,13 @@ function PayGapByJob2017() {
       ellipse(
         map(propFemale[i], 0, 100, this.pad, width - this.pad),
         map(payGap[i], -20, 20, height - this.pad, this.pad),
-        map(numJobs[i], numJobsMin, numJobsMax, this.dotSizeMin, this.dotSizeMax)
+        map(
+          numJobs[i],
+          numJobsMin,
+          numJobsMax,
+          this.dotSizeMin,
+          this.dotSizeMax
+        )
       );
     }
   };
@@ -79,7 +81,7 @@ function PayGapByJob2017() {
     stroke(255);
     textSize(12);
     textAlign(CENTER, CENTER);
-    
+
     // Draw vertical axis (y-axis) at the center
     line(width / 2, this.pad, width / 2, height - this.pad);
 

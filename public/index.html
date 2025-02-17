@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Case study 2: Data visualisation</title>
-    <h1>Case Study 2: Data Visualisation</h1>
 
     <!-- Libraries -->
     <script src="lib/p5.min.js"></script>
@@ -24,14 +23,22 @@
     <script src="pay-gap-1997-2017.js"></script>
     <script src="climate-change.js"></script>
     <script src="education.js"></script>
-    <script src="poverty-gap.js"></script>
 
     <!-- Main sketch file -->
     <script src="sketch.js"></script>
   </head>
   <body>
     <div id="app" class="container">
-      <ul id="visuals-menu"></ul>
+      <div id="menu">
+        <ul id="visuals-menu">
+          <h3>Data Visualisation Dashboard</h3>
+        </ul>
+      </div>
+      <div id="main">
+        <h3 id="visual-title"></h3>
+        <div id="canvas"></div>
+        <h3 id="sliders">slider area -----------</h3>
+      </div>
     </div>
   </body>
 </html>

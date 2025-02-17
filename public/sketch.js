@@ -1,9 +1,9 @@
 let gallery;
 
 function setup() {
-  canvasContainer = select("#app");
-  var c = createCanvas(1600, 700); // Create a canvas of size 1200x700
-  c.parent("app"); // Attach the canvas to the HTML element with id 'app'
+  canvasContainer = select("#canvas");
+  var c = createCanvas(1100, 600); // Create a canvas of size 1200x700
+  c.parent("canvas"); // Attach the canvas to the HTML element with id 'app'
 
   // Create a new gallery object.
   gallery = new Gallery();
@@ -15,20 +15,10 @@ function setup() {
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new EducationCompletionRate());
-  gallery.addVisual(new PovertyGap());
-
-  // Add second visualisation objects here.
-  gallery.addVisual(new ClimateChange2());
-  /*gallery.addVisual(new TechDiversityRace2());
-  gallery.addVisual(new TechDiversityGender2());
-  gallery.addVisual(new PayGapByJob20172());
-  gallery.addVisual(new PayGapTimeSeries2());
-  gallery.addVisual(new EducationCompletionRate2());
-  gallery.addVisual(new PovertyGap2());*/
 }
 
 function draw() {
-  background(40); // Set the background color to dark gray
+  background("#1c1c20"); // Set the background color
 
   let gap = 50; // Space between the two visuals
   let visualWidth = width / 2 - gap / 2; // Each visual fits within its half
