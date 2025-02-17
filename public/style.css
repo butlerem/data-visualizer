@@ -6,7 +6,7 @@ body {
 
 ul {
   width: 150px;
-  size: 10px;
+  font-size: 14px;
   background-color: #111113;
   padding: 10px;
 }
@@ -35,11 +35,12 @@ ul li {
 canvas {
   width: 100% !important;
   height: 100% !important;
-  padding: 20px;
 }
 
 #three-canvas {
-  width: 100%;
+  width: 1000px;
+  height: 550px; /* or a relative height strategy, see below */
+  display: flex; /* if you need flex for layout, otherwise block is fine */
 }
 
 #visual-title {

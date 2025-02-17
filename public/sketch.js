@@ -7,7 +7,7 @@ let canvasContainer; // Declare here
 window.setup = function () {
   // p5 setup
   canvasContainer = select("#canvas");
-  var c = createCanvas(1100, 600); // Create a canvas of size 1100x600
+  var c = createCanvas(1000, 550); // Create a canvas of size 1100x600
   c.parent("canvas"); // Attach the canvas to the HTML element with id='canvas'
 
   // Create a new gallery object

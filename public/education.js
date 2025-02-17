@@ -3,6 +3,7 @@ function EducationCompletionRate() {
   this.id = "education-completion-rate";
   this.title = "Female Primary Education Completion Rate Over Time";
   this.loaded = false;
+
   this.xAxisLabel = "year";
   this.yAxisLabel = "%";
   var marginSize = 35;
@@ -42,7 +43,6 @@ function EducationCompletionRate() {
 
   this.setup = function () {
     textSize(16);
-    textAlign("center", "center");
 
     let years = this.data.columns.slice(1); // Ignore 'Country Name' column
     this.globalStartYear = int(years[0]); // 1990

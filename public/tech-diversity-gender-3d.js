@@ -3,11 +3,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 export function TechDiversityGender3D() {
+  // Store a reference to 'this' so nested functions can access it.
+  const self = this;
+
   // Basic info for the gallery
-  this.name = "Tech Diversity: Gender (3D)";
-  this.id = "tech-diversity-gender-3d";
-  this.title = "3D Tech Diversity by Gender Percentage";
-  this.loaded = false; // We'll set this to true after data loads.
+  self.name = "Tech Diversity: Gender (3D)";
+  self.id = "tech-diversity-gender-3d";
+  self.title = "3D Tech Diversity by Gender Percentage";
+  self.loaded = false; // We'll set this to true after data loads.
 
   // Three.js objects
   let scene, camera, renderer, controls, barsGroup;
@@ -26,20 +29,20 @@ export function TechDiversityGender3D() {
   // -------------------- p5 Lifecycle Methods --------------------
 
   // 1) preload() => Loads data using p5's loadTable().
-  this.preload = function () {
+  self.preload = function () {
     dataTable = loadTable(
       "./data/tech-diversity/gender-2018.csv",
       "csv",
       "header",
       () => {
-        this.loaded = true;
+        self.loaded = true; // Use 'self' here instead of 'this'
       }
     );
   };
 
   // 2) setup() => Called once after preload() by the gallery.
   //    We hide #canvas and show #three-canvas, then init three.js.
-  this.setup = function () {
+  self.setup = function () {
     // Hide the p5 container.
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
@@ -62,13 +65,13 @@ export function TechDiversityGender3D() {
 
   // 3) draw() => Called every frame in the p5 draw loop.
   //    But three.js has its own requestAnimationFrame, so we typically do nothing here.
-  this.draw = function () {
+  self.draw = function () {
     // No-op, or minimal logic if needed.
   };
 
   // 4) destroy() => Called when the user switches visuals in the gallery.
   //    We hide #three-canvas, show #canvas, and remove the three.js canvas.
-  this.destroy = function () {
+  self.destroy = function () {
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
@@ -85,23 +88,19 @@ export function TechDiversityGender3D() {
     }
   };
 
-  // -------------------- THREE.JS Code (from main.js) --------------------
+  // -------------------- THREE.JS Code --------------------
 
   function initThree() {
-    // Create scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202020);
 
-    // Create camera
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(10, 10, 20);
     camera.lookAt(0, 0, 0);
 
-    // Create the renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
 
-    // Attach the renderer's canvas to <div id="three-canvas">
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.appendChild(renderer.domElement);
@@ -119,11 +118,9 @@ export function TechDiversityGender3D() {
     const gridHelper = new THREE.GridHelper(20, 20);
     scene.add(gridHelper);
 
-    // Group for bars
     barsGroup = new THREE.Group();
     scene.add(barsGroup);
 
-    // OrbitControls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
@@ -139,7 +136,7 @@ export function TechDiversityGender3D() {
     }
 
     // Make sure data is loaded
-    if (!this.loaded) {
+    if (!self.loaded) {
       console.log("Data not yet loaded.");
       return;
     }
@@ -186,7 +183,6 @@ export function TechDiversityGender3D() {
     barsGroup.scale.set(0.5, 0.5, 0.5);
   }
 
-  // Three.js animation loop
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -195,7 +191,6 @@ export function TechDiversityGender3D() {
     }
   }
 
-  // Handle window resizing
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
