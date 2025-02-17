@@ -92,11 +92,21 @@ function EducationCompletionRate() {
       1
     );
     this.yearSlider.position(20, height - 30);
-    this.yearSlider.style("width", "200px");
+    this.yearSlider.style("width", "300px");
+    const label = createP("Start Year:");
+    label.parent("sliders");
+    label.style("color", "#fff");
   };
 
   this.destroy = function () {
-    this.yearSlider.remove(); // Remove slider when switching visualizations
+    console.log("EducationCompletionRate: destroy()");
+    if (this.yearSlider) {
+      this.yearSlider.remove();
+    }
+    const slidersDiv = document.getElementById("sliders");
+    if (slidersDiv) {
+      slidersDiv.innerHTML = "";
+    }
   };
 
   this.draw = function () {

@@ -73,8 +73,6 @@ function PayGapTimeSeries() {
     );
     this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
-
-    // Optional label or instructions
     const label = createP("Start Year:");
     label.parent("sliders");
     label.style("color", "#fff");
