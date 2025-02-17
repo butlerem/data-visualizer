@@ -3,16 +3,12 @@ function ClimateChange() {
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
   this.loaded = false;
-
   this.xAxisLabel = "year";
   this.yAxisLabel = "℃";
-  var marginSize = 35;
+  var marginSize = 40;
 
   this.layout = {
     marginSize: marginSize,
-
-    // Locations of margin positions. Left and bottom have double margin
-    // size due to axis and tick labels.
     leftMargin: marginSize * 2,
     rightMargin: width - marginSize * 2,
     topMargin: marginSize,
@@ -27,25 +23,17 @@ function ClimateChange() {
       return this.bottomMargin - this.topMargin;
     },
 
-    // Boolean to enable/disable background grid.
     grid: false,
-
-    // Number of axis tick labels to draw so that they are not drawn on
-    // top of one another.
     numXTickLabels: 8,
     numYTickLabels: 8,
   };
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
   this.preload = function () {
     var self = this;
     this.data = loadTable(
       "./data/surface-temperature/surface-temperature.csv",
       "csv",
       "header",
-      // Callback function to set the value
-      // this.loaded to true.
       function (table) {
         self.loaded = true;
       }
@@ -53,7 +41,6 @@ function ClimateChange() {
   };
 
   this.setup = function () {
-    // Font defaults.
     textSize(16);
     textAlign("center", "center");
 

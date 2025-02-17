@@ -7,6 +7,14 @@
     <title>Case study 2: Data visualisation</title>
 
     <!-- Libraries -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@v0.149.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.149.0/examples/jsm/"
+        }
+      }
+    </script>
     <script src="lib/p5.min.js"></script>
     <script src="lib/p5.dom.min.js"></script>
     <link rel="stylesheet" href="style.css" />
@@ -23,8 +31,10 @@
     <script src="pay-gap-1997-2017.js"></script>
     <script src="climate-change.js"></script>
     <script src="education.js"></script>
+    <script src="tech-diversity-gender-3d.js" type="module"></script>
 
     <!-- Main sketch file -->
+
     <script src="sketch.js"></script>
   </head>
   <body>
@@ -37,6 +47,8 @@
       <div id="main">
         <h3 id="visual-title"></h3>
         <div id="canvas"></div>
+        <!-- three.js will attach its WebGL canvas (renderer.domElement) here -->
+        <div id="three-canvas"></div>
         <h3 id="sliders">slider area -----------</h3>
       </div>
     </div>

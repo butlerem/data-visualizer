@@ -38,6 +38,10 @@ canvas {
   padding: 20px;
 }
 
+#three-canvas {
+  width: 100%;
+}
+
 #visual-title {
   text-align: center;
   margin-bottom: 10px;
