@@ -16,11 +16,12 @@ window.setup = function () {
   // Add the visualisation objects here
   gallery.addVisual(new TechDiversityRace());
   gallery.addVisual(new TechDiversityGender());
+  gallery.addVisual(new TechDiversityGender3D());
   gallery.addVisual(new PayGapByJob2017());
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new EducationCompletionRate());
-  gallery.addVisual(new TechDiversityGender3D());
+  gallery.addVisual(new EducationGenderRadarChart());
 };
 
 window.draw = function () {
