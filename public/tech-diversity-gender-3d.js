@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-function TechDiversityGender3D() {
+export function TechDiversityGender3D() {
   // Basic info for the gallery
   this.name = "Tech Diversity: Gender (3D)";
   this.id = "tech-diversity-gender-3d";
