@@ -1,4 +1,5 @@
 import { TechDiversityGender3D } from "./tech-diversity-gender-3d.js";
+import { PayGapByJob2017 } from "./pay-gap-by-job-2017.js";
 
 let gallery;
 let canvasContainer;
