@@ -1,6 +1,7 @@
-// tech-diversity-gender-3d.js
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { FontLoader } from "three/addons/loaders/FontLoader.js";
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 export function PayGapByJob2017() {
   const self = this;
@@ -161,32 +162,116 @@ export function PayGapByJob2017() {
   }
 
   function createAxisLabels() {
-    const loader = new THREE.FontLoader();
+    const loader = new FontLoader();
     loader.load(
       "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
       function (font) {
-        const xLabelGeometry = new THREE.TextGeometry("X-Axis Label", {
-          font: font,
-          size: 0.5,
-          height: 0.1,
-        });
-        const xLabelMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const xLabel = new THREE.Mesh(xLabelGeometry, xLabelMaterial);
-        xLabel.position.set(0, -3, 0);
-        scene.add(xLabel);
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-        const yLabelGeometry = new THREE.TextGeometry("Y-Axis Label", {
-          font: font,
-          size: 0.5,
-          height: 0.1,
+        // Axis Labels (Properly Positioned)
+        const labels = [
+          {
+            text: "Proportion Female (%)",
+            position: [23, -2, 0],
+            rotation: [0, 0, 0],
+          }, // X-Axis
+          {
+            text: "Pay Gap (%)",
+            position: [-5, 20, 0],
+            rotation: [0, 0, Math.PI / 2],
+          }, // Y-Axis
+          {
+            text: "Number of Jobs",
+            position: [0, 0, -23],
+            rotation: [0, Math.PI / 2, 0],
+          }, // Z-Axis (Fixed)
+        ];
+
+        labels.forEach(({ text, position, rotation }) => {
+          const labelGeometry = new TextGeometry(text, {
+            font: font,
+            size: 1,
+            height: 0.1,
+          });
+          const label = new THREE.Mesh(labelGeometry, textMaterial);
+          label.position.set(...position);
+          label.rotation.set(...rotation);
+          scene.add(label);
         });
-        const yLabelMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const yLabel = new THREE.Mesh(yLabelGeometry, yLabelMaterial);
-        yLabel.position.set(-3, 0, 0);
-        yLabel.rotation.z = Math.PI / 2;
-        scene.add(yLabel);
+
+        // Add Tick Marks
+        addTickMarks(font);
       }
     );
+  }
+
+  function addTickMarks(font) {
+    const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const gridSize = 40; // Matches Three.js GridHelper size
+    const numTicks = 10; // Number of divisions per axis
+    const tickSpacing = gridSize / numTicks;
+
+    // X-Axis Ticks (Proportion Female %)
+    for (let i = -gridSize / 2; i <= gridSize / 2; i += tickSpacing) {
+      const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(i, 0, -1),
+        new THREE.Vector3(i, 0, 1),
+      ]);
+      const tick = new THREE.Line(tickGeometry, tickMaterial);
+      scene.add(tick);
+
+      // X Tick Label
+      const tickLabelGeo = new TextGeometry((i + 50).toFixed(0), {
+        font: font,
+        size: 0.5,
+        height: 0.1,
+      });
+      const tickLabel = new THREE.Mesh(tickLabelGeo, tickTextMaterial);
+      tickLabel.position.set(i, -1.5, 2);
+      scene.add(tickLabel);
+    }
+
+    // Y-Axis Ticks (Pay Gap %)
+    for (let i = 0; i <= gridSize; i += tickSpacing) {
+      const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-1, i, 0),
+        new THREE.Vector3(1, i, 0),
+      ]);
+      const tick = new THREE.Line(tickGeometry, tickMaterial);
+      scene.add(tick);
+
+      // Y Tick Label
+      const tickLabelGeo = new TextGeometry(i.toFixed(0), {
+        font: font,
+        size: 0.5,
+        height: 0.1,
+      });
+      const tickLabel = new THREE.Mesh(tickLabelGeo, tickTextMaterial);
+      tickLabel.position.set(-3, i - 0.5, 0);
+      scene.add(tickLabel);
+    }
+
+    // Z-Axis Ticks (Number of Jobs)
+    for (let i = -gridSize / 2; i <= gridSize / 2; i += tickSpacing) {
+      const tickGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, -1, i),
+        new THREE.Vector3(0, 1, i),
+      ]);
+      const tick = new THREE.Line(tickGeometry, tickMaterial);
+      scene.add(tick);
+
+      // Z Tick Label
+      const tickLabelGeo = new TextGeometry((i + 1000).toFixed(0), {
+        font: font,
+        size: 0.5,
+        height: 0.1,
+      });
+      const tickLabel = new THREE.Mesh(tickLabelGeo, tickTextMaterial);
+      tickLabel.position.set(0, -1.5, i);
+      scene.add(tickLabel);
+    }
   }
 
   function animate() {
