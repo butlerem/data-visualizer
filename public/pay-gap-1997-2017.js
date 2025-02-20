@@ -3,15 +3,14 @@ function PayGapTimeSeries() {
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
   this.loaded = false;
-
-  this.xAxisLabel = "year";
+  this.xAxisLabel = "Year";
   this.yAxisLabel = "%";
   var marginSize = 35;
 
   this.layout = {
     marginSize: marginSize,
     leftMargin: marginSize * 2,
-    rightMargin: width - marginSize,
+    rightMargin: width - marginSize * 2,
     topMargin: marginSize,
     bottomMargin: height - marginSize * 2,
     pad: 5,
@@ -41,6 +40,9 @@ function PayGapTimeSeries() {
   };
 
   this.setup = function () {
+    textSize(16);
+    textAlign("center", "center");
+
     this.globalStartYear = this.data ? this.data.getNum(0, "year") : 1997;
     this.globalEndYear = this.data
       ? this.data.getNum(this.data.getRowCount() - 1, "year")
@@ -62,9 +64,6 @@ function PayGapTimeSeries() {
     );
     this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
-    const label = createP("Start Year:");
-    label.parent("sliders");
-    label.style("color", "#fff");
   };
 
   // 3) destroy => remove any UI
@@ -114,7 +113,8 @@ function PayGapTimeSeries() {
       };
 
       if (previous) {
-        stroke(255);
+        stroke(200);
+        strokeWeight(1);
         line(
           this.mapYearToWidth(previous.year),
           this.mapPayGapToHeight(previous.payGap),

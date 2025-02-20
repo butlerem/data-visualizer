@@ -16,7 +16,6 @@ window.setup = function () {
 
   // Add the visualisation objects here
   gallery.addVisual(new TechDiversityRace());
-  gallery.addVisual(new TechDiversityGender());
   gallery.addVisual(new TechDiversityGender3D());
   gallery.addVisual(new PayGapByJob2017());
   gallery.addVisual(new PayGapTimeSeries());

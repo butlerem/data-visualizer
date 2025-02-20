@@ -6,9 +6,9 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 export function TechDiversityGender3D() {
   const self = this;
 
-  self.name = "Tech Diversity: Gender (3D)";
+  self.name = "Tech Diversity: Gender";
   self.id = "tech-diversity-gender-3d";
-  self.title = "3D Tech Diversity by Gender Percentage";
+  self.title = "Tech Diversity by Gender Percentage";
   self.loaded = false; // We'll set this to true after data loads.
 
   // Three.js objects

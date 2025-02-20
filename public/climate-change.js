@@ -3,9 +3,9 @@ function ClimateChange() {
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
   this.loaded = false;
-  this.xAxisLabel = "year";
-  this.yAxisLabel = "℃";
-  var marginSize = 40;
+  this.xAxisLabel = "Year";
+  this.yAxisLabel = "Change in ℃";
+  var marginSize = 35;
 
   this.layout = {
     marginSize: marginSize,
@@ -14,18 +14,16 @@ function ClimateChange() {
     topMargin: marginSize,
     bottomMargin: height - marginSize * 2,
     pad: 5,
+    grid: false,
+    numXTickLabels: 8,
+    numYTickLabels: 8,
 
     plotWidth: function () {
       return this.rightMargin - this.leftMargin;
     },
-
     plotHeight: function () {
       return this.bottomMargin - this.topMargin;
     },
-
-    grid: false,
-    numXTickLabels: 8,
-    numYTickLabels: 8,
   };
 
   this.preload = function () {

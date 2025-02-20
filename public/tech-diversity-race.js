@@ -65,12 +65,12 @@ function TechDiversityRace() {
 
     // Colour to use for each category.
     var colours = [
-      color(70, 70, 140, 255), // Deep steel blue
-      color(50, 100, 140, 255), // Cool teal blue
-      color(50, 140, 80, 255), // Rich forest green
-      color(140, 140, 50, 255), // Muted mustard yellow
-      color(140, 90, 50, 255), // Warm copper brown
-      color(140, 30, 50, 255), // Deep crimson red
+      "#5e81ac",
+      "#8fbcbb",
+      "#a3be8c",
+      "#b48ead",
+      "#e9a17c",
+      "#f4a6a0",
     ];
 
     // Draw the pie chart!
