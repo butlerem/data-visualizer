@@ -6,52 +6,41 @@ function PayGapTimeSeries() {
 
   this.xAxisLabel = "year";
   this.yAxisLabel = "%";
-  this.layout = null;
-  this.data = null;
+  var marginSize = 35;
 
-  // 1) preload
+  this.layout = {
+    marginSize: marginSize,
+    leftMargin: marginSize * 2,
+    rightMargin: width - marginSize,
+    topMargin: marginSize,
+    bottomMargin: height - marginSize * 2,
+    pad: 5,
+    grid: true,
+    numXTickLabels: 10,
+    numYTickLabels: 8,
+
+    plotWidth: function () {
+      return this.rightMargin - this.leftMargin;
+    },
+    plotHeight: function () {
+      return this.bottomMargin - this.topMargin;
+    },
+  };
+
   this.preload = function () {
-    console.log("PayGapTimeSeries: preload()");
-    const self = this;
+    var self = this;
     this.data = loadTable(
       "./data/pay-gap/all-employees-hourly-pay-by-gender-1997-2017.csv",
       "csv",
       "header",
       function () {
         self.loaded = true;
-        console.log("PayGapTimeSeries: data loaded!");
+        console.log("Data loaded!");
       }
     );
   };
 
-  // 2) setup => called after preload finishes
   this.setup = function () {
-    console.log("PayGapTimeSeries: setup()");
-
-    // Build the layout object based on current p5 canvas width/height
-    const marginSize = 35;
-    this.layout = {
-      marginSize: marginSize,
-      leftMargin: marginSize * 2,
-      rightMargin: width - marginSize,
-      topMargin: marginSize,
-      bottomMargin: height - marginSize * 2,
-      pad: 5,
-      grid: true,
-      numXTickLabels: 10,
-      numYTickLabels: 8,
-      plotWidth: function () {
-        return this.rightMargin - this.leftMargin;
-      },
-      plotHeight: function () {
-        return this.bottomMargin - this.topMargin;
-      },
-    };
-
-    // Set up default years
-    if (!this.loaded) {
-      console.log("PayGapTimeSeries: data not ready in setup()");
-    }
     this.globalStartYear = this.data ? this.data.getNum(0, "year") : 1997;
     this.globalEndYear = this.data
       ? this.data.getNum(this.data.getRowCount() - 1, "year")
@@ -96,8 +85,6 @@ function PayGapTimeSeries() {
       console.log("PayGapTimeSeries: data not yet loaded in draw()");
       return;
     }
-
-    background(0);
 
     // Use slider's current value
     this.startYear = this.yearSlider.value();

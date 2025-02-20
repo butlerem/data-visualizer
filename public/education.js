@@ -84,22 +84,23 @@ function EducationCompletionRate() {
     this.minEducation = 65;
     this.maxEducation = 100;
 
-    // ** Create a slider for zooming into the years **
+    // Create the slider in #sliders
     this.yearSlider = createSlider(
       this.globalStartYear,
-      2020,
+      this.globalEndYear - 2,
       this.globalStartYear,
       1
     );
-    this.yearSlider.position(20, height - 30);
+    this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
     const label = createP("Start Year:");
     label.parent("sliders");
     label.style("color", "#fff");
   };
 
+  // 3) destroy => remove any UI
   this.destroy = function () {
-    console.log("EducationCompletionRate: destroy()");
+    console.log("PayGapTimeSeries: destroy()");
     if (this.yearSlider) {
       this.yearSlider.remove();
     }

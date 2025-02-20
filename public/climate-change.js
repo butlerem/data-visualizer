@@ -67,7 +67,8 @@ function ClimateChange() {
       this.minYear,
       1
     );
-    this.startSlider.position(980, 70);
+    this.startSlider.parent("sliders"); // Attach to container
+    this.startSlider.style("width", "300px");
 
     this.endSlider = createSlider(
       this.minYear + 1,
@@ -75,16 +76,43 @@ function ClimateChange() {
       this.maxYear,
       1
     );
-    this.endSlider.position(1110, 70);
-    this.startSlider.style("width", "100px");
-    this.startSlider.style("height", "5px");
-    this.endSlider.style("width", "100px");
-    this.endSlider.style("height", "5px");
+    this.endSlider.parent("sliders"); // Attach to container
+    this.endSlider.style("width", "300px");
+
+    // Create a single label for both sliders
+    this.yearLabel = createP(
+      "Start Year: " +
+        this.startSlider.value() +
+        " | End Year: " +
+        this.endSlider.value()
+    );
+    this.yearLabel.parent("sliders");
+    this.yearLabel.style("color", "#fff");
+
+    // Update label dynamically
+    this.startSlider.input(() => {
+      this.yearLabel.html(
+        "Start Year: " +
+          this.startSlider.value() +
+          " | End Year: " +
+          this.endSlider.value()
+      );
+    });
+
+    this.endSlider.input(() => {
+      this.yearLabel.html(
+        "Start Year: " +
+          this.startSlider.value() +
+          " | End Year: " +
+          this.endSlider.value()
+      );
+    });
   };
 
   this.destroy = function () {
     this.startSlider.remove();
     this.endSlider.remove();
+    this.yearLabel.remove();
   };
 
   this.draw = function () {
@@ -162,7 +190,7 @@ function ClimateChange() {
 
         // Draw line segment connecting previous year to current
         // year temperature.
-        stroke(0);
+        stroke(200);
         line(
           this.mapYearToWidth(previous.year),
           this.mapTemperatureToHeight(previous.temperature),
@@ -241,8 +269,8 @@ function ClimateChange() {
   };
 
   this.mapTemperatureToColour = function (value) {
-    var red = map(value, this.minTemperature, this.maxTemperature, 0, 240);
-    var blue = 240 - red;
-    return color(red, 0, blue, 100);
+    var red = map(value, this.minTemperature, this.maxTemperature, 255, 180);
+    var blue = map(value, this.minTemperature, this.maxTemperature, 180, 255);
+    return color(red, 160, blue, 80); // More transparency (alpha = 80)
   };
 }
