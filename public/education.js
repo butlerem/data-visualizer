@@ -126,12 +126,12 @@ function EducationCompletionRate() {
 
     // Assign a distinct color to each region.
     let availableColors = [
-      color(255, 0, 0),
-      color(0, 255, 0),
-      color(0, 0, 255),
-      color(255, 255, 0),
-      color(255, 0, 255),
-      color(0, 255, 255),
+      color("#5e81ac"),
+      color("#81a1c1"),
+      color("#8fbcbb"),
+      color("#a3be8c"),
+      color("#b48ead"),
+      color("#d08770"),
     ];
     let index = 0;
     for (let region in this.data) {

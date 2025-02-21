@@ -15,15 +15,15 @@ export function PayGapByJob2017() {
   let dataTable; // p5 table for CSV data.
 
   const jobTypeColors = {
-    "Process, plant and machine operatives": 0x5e81ac, // Deep Teal (Most Male)
-    "Skilled trades occupations": 0x81a1c1, // Soft Blue
-    "Professional occupations": 0x8fbcbb, // Cool Blue-Green
-    "Associate professional and technical occupations": 0xa3be8c, // Muted Sage Green
-    "Managers, directors and senior officials": 0xb48ead, // Soft Lavender
-    "Sales and customer service occupations": 0xd08770, // Warm Coral
-    "Administrative and secretarial occupations": 0xe9a17c, // Peach
-    "Elementary occupations": 0xf2b5a0, // Soft Apricot
-    "Caring, leisure and other service occupations": 0xf4a6a0, // Warm Pastel Pink (Most Female)
+    "Process, plant and machine operatives": 0x5e81ac,
+    "Skilled trades occupations": 0x81a1c1,
+    "Professional occupations": 0x8fbcbb,
+    "Associate professional and technical occupations": 0xa3be8c,
+    "Managers, directors and senior officials": 0xb48ead,
+    "Sales and customer service occupations": 0xd08770,
+    "Administrative and secretarial occupations": 0xe9a17c,
+    "Elementary occupations": 0xf2b5a0,
+    "Caring, leisure and other service occupations": 0xf4a6a0,
   };
 
   // Preload the data
