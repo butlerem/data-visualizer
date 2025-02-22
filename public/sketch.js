@@ -1,4 +1,5 @@
 import { TechDiversityGender3D } from "./tech-diversity-gender-3d.js";
+import { TechDiversityRace3D } from "./tech-diversity-race-3d.js";
 import { PayGapByJob2017 } from "./pay-gap-by-job-2017.js";
 
 let gallery;
@@ -16,6 +17,7 @@ window.setup = function () {
 
   // Add the visualisation objects here
   gallery.addVisual(new TechDiversityRace());
+  gallery.addVisual(new TechDiversityRace3D());
   gallery.addVisual(new TechDiversityGender3D());
   gallery.addVisual(new PayGapByJob2017());
   gallery.addVisual(new PayGapTimeSeries());

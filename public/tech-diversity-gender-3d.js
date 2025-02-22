@@ -11,9 +11,8 @@ export function TechDiversityGender3D() {
   self.title = "Tech Diversity by Gender Percentage";
   self.loaded = false; // We'll set this to true after data loads.
 
-  // Three.js objects
   let scene, camera, renderer, controls, barsGroup;
-  let dataTable; // p5 table for CSV data.
+  let dataTable;
 
   // Chart configuration parameters
   const barWidth = 0.5;
@@ -84,7 +83,7 @@ export function TechDiversityGender3D() {
 
     // Camera Setuo
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    camera.position.set(-25, 20, 0);
+    camera.position.set(-25, 10, 0);
     camera.lookAt(0, 0, 0);
 
     // Renderer Setup

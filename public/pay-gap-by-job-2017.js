@@ -77,8 +77,8 @@ export function PayGapByJob2017() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202020);
 
-    camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    camera.position.set(30, 30, 50);
+    camera = new THREE.PerspectiveCamera(55, getAspect(), 0.1, 1000);
+    camera.position.set(0, 30, 50);
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
