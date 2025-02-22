@@ -35,7 +35,7 @@ function EducationGenderRadarChart() {
     }
 
     // **Create an Offscreen Canvas (p5.Graphics)**
-    this.graphics = createGraphics(500, 500); // Chart.js will render here
+    this.graphics = createGraphics(600, 600); // Chart.js will render here
 
     // Create Chart.js inside p5.Graphics
     this.createChart(categories, maleData, femaleData);
@@ -86,10 +86,24 @@ function EducationGenderRadarChart() {
             angleLines: { display: true }, // Enable radial grid lines
             suggestedMin: 50,
             suggestedMax: 100,
-            grid: { color: "rgba(255, 255, 255, 0.2)" }, // Lighter grid lines
+            grid: { color: "rgba(255, 255, 255, 0.42)" }, // Lighter grid lines
             ticks: {
               backdropColor: "rgba(0,0,0,0)", // Remove white box behind tick labels
-              color: "#ffffff", // Ensure text is visible
+              color: "rgba(255, 255, 255, 0.95)", // Ensure text is visible
+              font: { size: 12, weight: "bold" }, // Increase font size and bold
+            },
+            pointLabels: {
+              font: { size: 18 }, // Bigger and bolder category labels
+              color: "rgba(255, 255, 255, 0.95)", // Brighter labels
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: "rgba(255, 255, 255, 0.95)", // Make legend text brighter
+              font: { size: 18 }, // **Increase font size to 18px**
+              padding: 15, // Add spacing for better readability
             },
           },
         },

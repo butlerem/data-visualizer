@@ -139,6 +139,8 @@ function EducationCompletionRate() {
         availableColors[index % availableColors.length];
       index++;
     }
+
+    this.frameCount = 0;
   };
 
   // 3) Destroy: Remove any UI elements when this visualization is taken down.
@@ -177,8 +179,7 @@ function EducationCompletionRate() {
 
     let numYears = this.endYear - this.startYear;
     let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    // Reset text style to ensure tick labels are not bold.
-    textStyle(NORMAL);
+
     for (let year = this.startYear; year <= this.endYear; year++) {
       if ((year - this.startYear) % xTickSkip === 0) {
         let x = this.mapYearToWidth(year);
@@ -192,26 +193,33 @@ function EducationCompletionRate() {
 
     // For each region, draw a line connecting its data points.
     for (let region in this.data) {
-      // Filter out data points before the selected start year.
       let regionData = this.data[region].filter(
         (d) => d.year >= this.startYear
       );
-      if (regionData.length < 2) continue; // Need at least two points to draw a line
+      if (regionData.length < 2) continue;
 
-      // Set the stroke color for the current region.
       stroke(this.regionColors[region]);
       strokeWeight(2);
       noFill();
 
-      // Begin drawing the line (using p5.js beginShape/endShape)
       beginShape();
+      let yearCount = 0; // Counter to limit animation
+
       for (let i = 0; i < regionData.length; i++) {
+        if (yearCount >= this.frameCount) break; // Stop drawing when reaching frame limit
         let pt = regionData[i];
         let x = this.mapYearToWidth(pt.year);
         let y = this.mapRateToHeight(pt.rate);
         vertex(x, y);
+        yearCount++;
       }
       endShape();
+    }
+
+    this.frameCount++; // Increment animation frame count
+
+    if (this.frameCount >= numYears) {
+      this.frameCount = numYears; // Stop when all years are drawn
     }
   };
 
