@@ -17,7 +17,6 @@ function EducationCompletionRate() {
     grid: true,
     numXTickLabels: 10,
     numYTickLabels: 8,
-
     plotWidth: function () {
       return this.rightMargin - this.leftMargin;
     },
@@ -26,53 +25,50 @@ function EducationCompletionRate() {
     },
   };
 
-  // Instead of a selected country, we now group data by region.
-  // this.data will be an object where each key is a region and each value is an array of {year, rate} objects.
-  this.data = {};
-  // This object will hold a color for each region (so each line is visually distinct)
-  this.regionColors = {};
-
-  // 1) Preload: load the CSV table containing our education data.
+  // Preload data from Firestore
   this.preload = function () {
-    let self = this;
-    this.table = loadTable(
-      "./data/education/primary_education_completion.csv",
-      "csv",
-      "header",
-      function (table) {
+    var self = this;
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "education_gender"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-        console.log("Data loaded!");
-      }
-    );
+        console.log("Data loaded from Firestore:", self.data);
+      })
+      .catch((error) => {
+        console.error("Error loading data:", error);
+      });
   };
 
-  // 2) Setup: Process the data and group it by region.
+  // We'll store processed data here.
+  this.data = {};
+  this.regionColors = {};
+
+  // Setup: Process the data and group it by region.
   this.setup = function () {
     textSize(16);
-    textAlign("center", "center");
+    textAlign(CENTER, CENTER);
     if (!this.loaded) return;
 
-    // Create an intermediate object to gather values for each region and year.
-    // It will have the form:
-    // { regionName: { year: [list of rates from different countries in that region] } }
     let regionYearValues = {};
 
-    // Assume our data spans the years 1990 to 2023 (based on your CSV headers)
-    for (let i = 0; i < this.table.getRowCount(); i++) {
-      let row = this.table.getRow(i);
-      let region = row.get("Region");
+    // Iterate over the Firestore data (plain objects)
+    for (let i = 0; i < this.data.length; i++) {
+      let row = this.data[i]; // Each row is a plain object
+      let region = row["Region"];
       if (!region) continue; // Skip rows without a region
 
-      // If we haven't seen this region before, create an entry for it.
       if (!regionYearValues[region]) {
         regionYearValues[region] = {};
       }
 
-      // Loop through each year and add the value (if available) to the list.
+      // Loop through each year from 1990 to 2023.
       for (let year = 1990; year <= 2023; year++) {
-        let value = row.get(year.toString());
-        if (value !== "") {
-          // Only process if there is data for that year
+        let value = row[year.toString()];
+        if (value !== undefined && value !== "") {
           let numValue = float(value);
           if (!regionYearValues[region][year]) {
             regionYearValues[region][year] = [];
@@ -82,8 +78,7 @@ function EducationCompletionRate() {
       }
     }
 
-    // Now, compute the average completion rate for each region per year.
-    // We will store this processed data in this.data.
+    // Compute the average completion rate for each region per year.
     for (let region in regionYearValues) {
       this.data[region] = [];
       for (let year = 1990; year <= 2023; year++) {
@@ -94,17 +89,17 @@ function EducationCompletionRate() {
           this.data[region].push({ year: year, rate: avg });
         }
       }
-      // Make sure the array is sorted by year.
+      // Sort the data points by year.
       this.data[region].sort((a, b) => a.year - b.year);
     }
 
-    // Define the global start and end years (you can change these if needed)
+    // Define start and end years.
     this.globalStartYear = 1990;
     this.globalEndYear = 2023;
     this.startYear = this.globalStartYear;
     this.endYear = this.globalEndYear;
 
-    // Calculate the overall minimum and maximum rate values across all regions.
+    // Determine the overall min and max rate values.
     let allRates = [];
     for (let region in this.data) {
       for (let i = 0; i < this.data[region].length; i++) {
@@ -114,7 +109,7 @@ function EducationCompletionRate() {
     this.minRate = min(allRates);
     this.maxRate = max(allRates);
 
-    // Create a slider to allow the user to select a start year.
+    // Create a slider for selecting a start year.
     this.yearSlider = createSlider(
       this.globalStartYear,
       this.globalEndYear,
@@ -124,7 +119,7 @@ function EducationCompletionRate() {
     this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
 
-    // Assign a distinct color to each region.
+    // Assign distinct colors to each region.
     let availableColors = [
       color(255, 0, 0),
       color(0, 255, 0),
@@ -141,7 +136,6 @@ function EducationCompletionRate() {
     }
   };
 
-  // 3) Destroy: Remove any UI elements when this visualization is taken down.
   this.destroy = function () {
     console.log("Destroying Education Completion Rate visualization...");
     if (this.yearSlider) {
@@ -153,17 +147,15 @@ function EducationCompletionRate() {
     }
   };
 
-  // 4) Draw: Render the visualization on the canvas.
   this.draw = function () {
     if (!this.loaded || Object.keys(this.data).length === 0) {
       console.log("Education data not yet loaded.");
       return;
     }
 
-    // Update the start year from the slider value.
     this.startYear = this.yearSlider.value();
 
-    // Draw Y axis tick labels (assumes you have a drawYAxisTickLabels function).
+    // Draw Y axis tick labels, axes, and labels (assume these helper functions exist).
     drawYAxisTickLabels(
       this.minRate,
       this.maxRate,
@@ -171,39 +163,32 @@ function EducationCompletionRate() {
       this.mapRateToHeight.bind(this),
       0
     );
-    // Draw the main axes and their labels.
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
     let numYears = this.endYear - this.startYear;
     let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    // Reset text style to ensure tick labels are not bold.
     textStyle(NORMAL);
     for (let year = this.startYear; year <= this.endYear; year++) {
       if ((year - this.startYear) % xTickSkip === 0) {
         let x = this.mapYearToWidth(year);
-        stroke(150); // Color for grid lines; adjust as needed.
+        stroke(150);
         line(x, this.layout.topMargin, x, this.layout.bottomMargin);
         noStroke();
-        fill(255); // Color for text; adjust as needed.
+        fill(255);
         text(year, x, this.layout.bottomMargin + 15);
       }
     }
 
-    // For each region, draw a line connecting its data points.
+    // Draw lines for each region.
     for (let region in this.data) {
-      // Filter out data points before the selected start year.
       let regionData = this.data[region].filter(
         (d) => d.year >= this.startYear
       );
-      if (regionData.length < 2) continue; // Need at least two points to draw a line
-
-      // Set the stroke color for the current region.
+      if (regionData.length < 2) continue;
       stroke(this.regionColors[region]);
       strokeWeight(2);
       noFill();
-
-      // Begin drawing the line (using p5.js beginShape/endShape)
       beginShape();
       for (let i = 0; i < regionData.length; i++) {
         let pt = regionData[i];
@@ -215,7 +200,6 @@ function EducationCompletionRate() {
     }
   };
 
-  // Helper function to map a given year to an x-coordinate.
   this.mapYearToWidth = function (value) {
     return map(
       value,
@@ -226,7 +210,6 @@ function EducationCompletionRate() {
     );
   };
 
-  // Helper function to map a given rate value to a y-coordinate.
   this.mapRateToHeight = function (value) {
     return map(
       value,

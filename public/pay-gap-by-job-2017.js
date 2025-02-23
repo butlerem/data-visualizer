@@ -26,16 +26,21 @@ export function PayGapByJob2017() {
     "Caring, leisure and other service occupations": 0xf4a6a0, // Warm Pastel Pink (Most Female)
   };
 
-  // Preload the data
-  self.preload = function () {
-    dataTable = loadTable(
-      "./data/pay-gap/occupation-hourly-pay-by-gender-2017.csv",
-      "csv",
-      "header",
-      () => {
+  this.preload = function () {
+    var self = this;
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "occupation_pay_gap"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-      }
-    );
+        console.log("Data loaded from Firestore:", self.data);
+      })
+      .catch((error) => {
+        console.error("Error loading data:", error);
+      });
   };
 
   self.setup = function () {

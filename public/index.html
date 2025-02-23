@@ -20,22 +20,10 @@
     <script src="lib/p5.dom.min.js"></script>
     <link rel="stylesheet" href="style.css" />
 
-    <!-- Add extra scripts below -->
+    <!-- Add extra scripts below (for non-modular code) -->
     <script src="helper-functions.js"></script>
     <script src="gallery.js"></script>
     <script src="pie-chart.js"></script>
-
-    <!-- Main visualisation files -->
-    <script src="tech-diversity-race.js"></script>
-    <script src="pay-gap-by-job-2017.js"></script>
-    <script src="pay-gap-1997-2017.js"></script>
-    <script src="climate-change.js"></script>
-    <script src="education.js"></script>
-    <script src="radarchart.js"></script>
-
-    <!-- Main sketch file -->
-
-    <script type="module" src="sketch.js"></script>
   </head>
   <body>
     <div id="app" class="container">
@@ -48,8 +36,27 @@
         <h3 id="visual-title"></h3>
         <div id="canvas"></div>
         <div id="sliders"></div>
-        <!-- three.js will attach its WebGL canvas (renderer.domElement) here -->
+        <!-- three.js will attach its WebGL canvas here -->
         <div id="three-canvas"></div>
+      </div>
     </div>
+    <!-- Firebase Initialization -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyDtkh3uEhxyZrulBExIW8Wruqlx3uFt3wQ",
+        authDomain: "data-visualization-8fe38.firebaseapp.com",
+        projectId: "data-visualization-8fe38",
+        storageBucket: "data-visualization-8fe38.firebasestorage.app",
+        messagingSenderId: "439237279912",
+        appId: "1:439237279912:web:57580ccf2cc2330da8029d",
+        measurementId: "G-170211TMCN",
+      };
+      window.app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(window.app);
+    </script>
+    <!-- Main sketch file -->
+    <script type="module" src="sketch.js"></script>
   </body>
 </html>
