@@ -1,54 +1,92 @@
 body {
   font-family: "Inter", sans-serif;
   background-color: #111114;
+  font-size: small;
   color: #fff;
-}
-
-ul {
-  width: 150px;
-  font-size: 14px;
-  background-color: #111114;
-  padding: 10px;
-}
-
-ul li {
-  display: block;
-  color: #bbb;
-  text-decoration: none;
-  padding: 10px 0;
-  transition: background-color 0.3s ease;
-}
-
-.hover {
-  color: #fff;
-}
-
-.selected {
-  background-color: #1c1c20;
-  color: #ffffff;
+  margin: 0;
+  padding: 0;
 }
 
 .container {
   display: flex;
+  height: 100vh; /* Full viewport height */
 }
 
-canvas {
-  width: 100% !important;
-  height: 100% !important;
+#menu {
+  width: 190px; /* Adjust width as needed */
+  background-color: #1a1a1d;
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-#three-canvas {
-  width: 1000px;
-  height: 550px; /* or a relative height strategy, see below */
-  display: flex; /* if you need flex for layout, otherwise block is fine */
+#menu-title,
+#visual-title {
+  height: 70px; /* Fixed height */
+  min-height: 70px; /* Ensures it never shrinks */
+  max-height: 70px; /* Prevents expansion */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px; /* Consistent font size */
+  font-weight: bold;
+  margin: 0;
+  flex-shrink: 0; /* Prevents height from adjusting */
+  overflow: hidden; /* Prevents content from affecting height */
+  white-space: nowrap; /* Ensures text stays in one line */
+  text-overflow: ellipsis; /* Adds "..." if text overflows */
+}
+
+#menu-title {
+  background-color: #37373a;
 }
 
 #visual-title {
-  text-align: center;
-  margin-bottom: 10px;
+  background-color: #2c2c30;
+  width: 100%; /* Ensures it spans full width */
 }
 
-#sliders {
-  text-align: center;
-  margin-bottom: 10px;
+#visuals-menu {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#visuals-menu li {
+  color: #bbb;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+#visuals-menu li:hover {
+  color: #4aa4aa;
+}
+
+#visuals-menu li.selected {
+  color: #0da7b3;
+}
+
+#main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+#canvas {
+  flex-grow: 1;
+  background-color: #1c1c1f;
+  max-width: 1200px; /* Prevents visuals from being too wide */
+  max-height: 700px; /* Prevents visuals from being too tall */
+  padding: 10px;
+  margin: 30px;
+}
+
+#three-canvas {
+  flex-grow: 1;
+  background-color: #1c1c1f;
+  max-width: 1200px; /* Prevents visuals from being too wide */
+  max-height: 700px; /* Prevents visuals from being too tall */
+  margin: 30px;
 }

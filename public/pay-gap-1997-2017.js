@@ -64,6 +64,8 @@ function PayGapTimeSeries() {
     );
     this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
+
+    this.frameCount = 0; // Initialize animation frame counter
   };
 
   // 3) destroy => remove any UI
@@ -99,13 +101,35 @@ function PayGapTimeSeries() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    let previous = null;
     let numYears = this.endYear - this.startYear;
+    let maxFrames = this.data.getRowCount(); // Total data points
+
+    stroke(200);
+    strokeWeight(2);
+    noFill();
+
+    // 🔹 **Fix: Ensure Grid Lines Always Render**
+    let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
+    for (let year = this.startYear; year <= this.endYear; year++) {
+      if ((year - this.startYear) % xTickSkip === 0) {
+        let x = this.mapYearToWidth(year);
+        stroke(150); // Grid color
+        line(x, this.layout.topMargin, x, this.layout.bottomMargin); // Vertical grid lines
+        noStroke();
+        fill(255);
+        text(year, x, this.layout.bottomMargin + 15);
+      }
+    }
+
+    // 🔹 **Now, Draw the Animated Line**
+    let previous = null;
+    let yearCount = 0; // Controls animation speed
 
     for (let i = 0; i < this.data.getRowCount(); i++) {
       let year = this.data.getNum(i, "year");
-
       if (year < this.startYear) continue;
+
+      if (yearCount >= this.frameCount) break; // Stop drawing after reaching frame limit
 
       let current = {
         year: year,
@@ -113,25 +137,24 @@ function PayGapTimeSeries() {
       };
 
       if (previous) {
-        stroke(200);
-        strokeWeight(1);
+        // Draw line progressively
+        stroke(255);
         line(
           this.mapYearToWidth(previous.year),
           this.mapPayGapToHeight(previous.payGap),
           this.mapYearToWidth(current.year),
           this.mapPayGapToHeight(current.payGap)
         );
-
-        let xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
-        if (i % xLabelSkip === 0) {
-          drawXAxisTickLabel(
-            previous.year,
-            this.layout,
-            this.mapYearToWidth.bind(this)
-          );
-        }
       }
+
       previous = current;
+      yearCount++;
+    }
+
+    this.frameCount++; // Increment animation frame count
+
+    if (this.frameCount >= maxFrames) {
+      this.frameCount = maxFrames; // Stop animation when fully drawn
     }
   };
 
