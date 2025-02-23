@@ -6,15 +6,19 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 export function TechDiversityGender3D() {
   const self = this;
 
-  self.name = "Tech Diversity: Gender";
+  // Basic info for your gallery
+  self.name = "Tech Diversity: Gender (3D)";
   self.id = "tech-diversity-gender-3d";
-  self.title = "Tech Diversity by Gender Percentage";
-  self.loaded = false; // We'll set this to true after data loads.
+  self.title = "Tech Diversity by Gender Percentage (3D)";
 
+  // We'll store Firestore docs as an array of objects
+  self.data = [];
+  self.loaded = false; // set to true when Firestore data is loaded
+
+  // Three.js variables
   let scene, camera, renderer, controls, barsGroup;
-  let dataTable;
 
-  // Chart configuration parameters
+  // Chart config
   const barWidth = 0.5;
   const barDepth = 0.6;
   const gapBetweenBars = 0.1;
@@ -24,14 +28,17 @@ export function TechDiversityGender3D() {
   const femaleColor = 0xf2b5a0;
   const maleColor = 0x8fbcbb;
 
+  // ------------------------------------------------
+  // 1) PRELOAD: fetch from Firestore
+  // ------------------------------------------------
   this.preload = function () {
-    var self = this;
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
+        const db = getFirestore(window.app); // Ensure window.app is your Firebase app
         return getDocs(collection(db, "tech_diversity_gender"));
       })
       .then((querySnapshot) => {
+        // Convert docs to a JS array
         self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
         console.log(
@@ -44,134 +51,156 @@ export function TechDiversityGender3D() {
       });
   };
 
-  self.setup = function () {
-    // Hide the p5 container.
+  // ------------------------------------------------
+  // 2) SETUP: hide p5 canvas, show Three.js, etc.
+  // ------------------------------------------------
+  this.setup = function () {
+    // If data not loaded or empty, skip
+    if (!self.loaded || !self.data.length) {
+      console.log("TechDiversityGender3D: no data loaded yet.");
+      return;
+    }
+
+    // Hide p5 #canvas
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "none";
     }
 
-    // Show the three.js container.
+    // Show #three-canvas
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "block";
     }
 
-    // Initialize our three.js scene and build the bars.
+    // Init Three.js
     initThree();
+
+    // Build bars & labels
     createBars();
     createAxisLabels();
+
+    // Start the render loop
     animate();
   };
 
-  self.draw = function () {};
+  // ------------------------------------------------
+  // 3) DRAW: p5 calls this, but we do nothing in 3D
+  // ------------------------------------------------
+  this.draw = function () {
+    // Empty. We rely on Three.js's animate() with requestAnimationFrame.
+  };
 
-  // 4) destroy() => Called when the user switches visuals in the gallery.
-  //    We hide #three-canvas, show #canvas, and remove the three.js canvas.
-  self.destroy = function () {
+  // ------------------------------------------------
+  // 4) DESTROY: revert to p5 canvas, remove Three.js DOM
+  // ------------------------------------------------
+  this.destroy = function () {
+    // Hide Three.js
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
     }
-
+    // Show p5 canvas
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "block";
     }
-
-    // Remove the three.js canvas from the DOM so it doesn't accumulate.
+    // Remove Three.js canvas
     if (renderer && renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
 
+  // ------------------------------------------------
+  // initThree(): basic scene/camera/renderer setup
+  // ------------------------------------------------
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202020);
 
-    // Camera Setuo
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-25, 10, 0);
     camera.lookAt(0, 0, 0);
 
-    // Renderer Setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
-
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Lighting Setup
+    // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
-
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    // **Dynamically Calculate Grid Size Based on Dataset**
-    const numCompanies = dataTable.getRowCount();
-    const gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // +2 for padding
+    // We no longer have dataTable, so let's compute grid size from this.data length
+    let numCompanies = self.data.length;
+    let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // a bit of padding
 
-    // **Updated GridHelper**
+    // Add a grid helper
     const gridHelper = new THREE.GridHelper(gridSize, numCompanies);
     scene.add(gridHelper);
 
-    // Group to hold all the bars
+    // Group to hold bars
     barsGroup = new THREE.Group();
     scene.add(barsGroup);
 
-    // Orbit Controls
+    // OrbitControls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
 
-    // Handle window resizing
     window.addEventListener("resize", onWindowResize);
   }
 
+  // ------------------------------------------------
+  // createBars(): build bar geometry from Firestore array
+  // ------------------------------------------------
   function createBars() {
-    const numCompanies = dataTable.getRowCount();
-    const offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // Center the bars
+    let numCompanies = self.data.length;
+    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // center them
 
-    // Build bar groups from CSV rows
     for (let i = 0; i < numCompanies; i++) {
-      const row = dataTable.getRow(i);
-      const femaleVal = parseFloat(row.getString("female"));
-      const maleVal = parseFloat(row.getString("male"));
+      const doc = self.data[i];
 
+      // Convert from strings to numbers (if needed)
+      let femaleVal = parseFloat(doc.female) || 0;
+      let maleVal = parseFloat(doc.male) || 0;
+
+      // A group for each company's bars
       const companyGroup = new THREE.Group();
 
-      // **Female bar**
-      const femaleHeight = femaleVal * scaleFactor;
-      const femaleGeom = new THREE.BoxGeometry(
-        barWidth,
-        femaleHeight,
-        barDepth
-      );
-      const femaleMat = new THREE.MeshStandardMaterial({ color: femaleColor });
-      const femaleBar = new THREE.Mesh(femaleGeom, femaleMat);
-      femaleBar.position.y = femaleHeight / 2; // Center on Y-axis
+      // -- Female Bar --
+      let femaleHeight = femaleVal * scaleFactor;
+      let femaleGeom = new THREE.BoxGeometry(barWidth, femaleHeight, barDepth);
+      let femaleMat = new THREE.MeshStandardMaterial({ color: femaleColor });
+      let femaleBar = new THREE.Mesh(femaleGeom, femaleMat);
+      femaleBar.position.y = femaleHeight / 2; // center it
       femaleBar.position.x = -(barWidth / 2 + gapBetweenBars / 2);
       companyGroup.add(femaleBar);
 
-      // **Male bar**
-      const maleHeight = maleVal * scaleFactor;
-      const maleGeom = new THREE.BoxGeometry(barWidth, maleHeight, barDepth);
-      const maleMat = new THREE.MeshStandardMaterial({ color: maleColor });
-      const maleBar = new THREE.Mesh(maleGeom, maleMat);
+      // -- Male Bar --
+      let maleHeight = maleVal * scaleFactor;
+      let maleGeom = new THREE.BoxGeometry(barWidth, maleHeight, barDepth);
+      let maleMat = new THREE.MeshStandardMaterial({ color: maleColor });
+      let maleBar = new THREE.Mesh(maleGeom, maleMat);
       maleBar.position.y = maleHeight / 2;
       maleBar.position.x = barWidth / 2 + gapBetweenBars / 2;
       companyGroup.add(maleBar);
 
-      // Position the entire company group
+      // Position this company's group along Z
       companyGroup.position.z = -i * gapBetweenCompanies + offsetZ;
+
       barsGroup.add(companyGroup);
     }
   }
 
+  // ------------------------------------------------
+  // createAxisLabels(): add text labels for axes & companies
+  // ------------------------------------------------
   function createAxisLabels() {
     const loader = new FontLoader();
     loader.load(
@@ -179,24 +208,24 @@ export function TechDiversityGender3D() {
       function (font) {
         const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
+        // Y-axis label
         const yAxisLabelGeo = new TextGeometry("Male and Female (%)", {
           font: font,
           size: 0.5,
           height: 0.1,
         });
         const yAxisLabel = new THREE.Mesh(yAxisLabelGeo, textMaterial);
-
         yAxisLabel.position.set(0, 1, -22);
         yAxisLabel.rotation.set(0, (3 * Math.PI) / 2, Math.PI / 2);
         scene.add(yAxisLabel);
 
+        // X-axis label
         const xAxisLabelGeo = new TextGeometry("Company", {
           font: font,
           size: 0.5,
           height: 0.1,
         });
         const xAxisLabel = new THREE.Mesh(xAxisLabelGeo, textMaterial);
-
         xAxisLabel.position.set(0, -7, 0);
         xAxisLabel.rotation.set(0, (3 * Math.PI) / 2, 0);
         scene.add(xAxisLabel);
@@ -207,18 +236,22 @@ export function TechDiversityGender3D() {
     );
   }
 
+  // ------------------------------------------------
+  // addYAxisTicks(font): draws % ticks from 0% to 100%
+  // ------------------------------------------------
   function addYAxisTicks(font) {
     const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
     const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     const maxPercentage = 100;
-    const numTicks = 5; // 0%, 20%, 40%, 60%, 80%, 100%
+    const numTicks = 5; // e.g., 0%, 20%, 40%, 60%, 80%, 100%
     const tickSpacing = (maxPercentage * scaleFactor) / numTicks;
 
     for (let i = 0; i <= numTicks; i++) {
-      const yValue = i * (maxPercentage / numTicks);
-      const yPos = i * tickSpacing;
+      let yValue = i * (maxPercentage / numTicks); // e.g. 0, 20, 40, 60, 80, 100
+      let yPos = i * tickSpacing;
 
+      // A small line segment for the tick mark
       const tickGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, yPos, -20),
         new THREE.Vector3(-0.5, yPos, -20),
@@ -226,44 +259,49 @@ export function TechDiversityGender3D() {
       const tick = new THREE.Line(tickGeometry, tickMaterial);
       scene.add(tick);
 
+      // The tick label (text)
       const tickLabelGeo = new TextGeometry(yValue.toFixed(0), {
         font: font,
         size: 0.5,
         height: 0.05,
       });
       const tickLabel = new THREE.Mesh(tickLabelGeo, tickTextMaterial);
-
       tickLabel.position.set(0, yPos - 0.3, -20);
       tickLabel.rotation.set(0, (3 * Math.PI) / 2, Math.PI / 2);
       scene.add(tickLabel);
     }
   }
 
+  // ------------------------------------------------
+  // addCompanyLabels(font): display each company's name near its bars
+  // ------------------------------------------------
   function addCompanyLabels(font) {
     const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-    const numCompanies = dataTable.getRowCount();
-    const offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2;
+    let numCompanies = self.data.length;
+    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2;
 
     for (let i = 0; i < numCompanies; i++) {
-      const companyName = dataTable.getString(i, "company");
+      let companyName = self.data[i].company || "Unknown";
 
       const labelGeometry = new TextGeometry(companyName, {
         font: font,
         size: 0.5,
         height: 0.05,
       });
-
       const label = new THREE.Mesh(labelGeometry, textMaterial);
 
+      // Position the label near the bars
       label.position.set(0, -1, -i * gapBetweenCompanies + offsetZ);
-
       label.rotation.set(0, (3 * Math.PI) / 2, -Math.PI / 2);
 
       scene.add(label);
     }
   }
 
+  // ------------------------------------------------
+  // animate: main Three.js loop
+  // ------------------------------------------------
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -272,13 +310,16 @@ export function TechDiversityGender3D() {
     }
   }
 
+  // ------------------------------------------------
+  // onWindowResize
+  // ------------------------------------------------
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(getWidth(), getHeight());
   }
 
-  // Helpers to get the width/height of #three-canvas
+  // Helper: #three-canvas dims
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;

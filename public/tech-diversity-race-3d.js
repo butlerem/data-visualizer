@@ -6,12 +6,17 @@ export function TechDiversityRace3D() {
 
   self.name = "Tech Diversity: Race 3D";
   self.id = "tech-diversity-race-3d";
-  self.title = "Tech Diversity by Race Percentage";
+  self.title = "Tech Diversity by Race (3D)";
+
+  // We'll store Firestore docs in "raceDocs" and the inverted data in "dataByCompany"
+  self.raceDocs = [];
+  self.dataByCompany = [];
   self.loaded = false;
 
+  // Three.js variables
   let scene, camera, renderer, controls, raceGroup;
-  let dataTable;
 
+  // Colors for slices
   const raceColors = [
     0x5e81ac, // Blue
     0x8fbcbb, // Teal
@@ -21,83 +26,132 @@ export function TechDiversityRace3D() {
     0xf4a6a0, // Pink
   ];
 
+  // ------------------------------------------------
+  // 1) PRELOAD: load docs from Firestore
+  // ------------------------------------------------
   this.preload = function () {
-    var self = this;
+    // USE A REAL URL OR RELATIVE PATH HERE:
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
         const db = getFirestore(window.app);
-        // Query the appropriate collection (for example, "tech_diversity_race")
         return getDocs(collection(db, "tech_diversity_race"));
       })
       .then((querySnapshot) => {
-        // Convert the documents to an array of objects.
-        self.data = querySnapshot.docs.map((doc) => doc.data());
+        self.raceDocs = [];
+        querySnapshot.forEach((doc) => {
+          console.log("Doc ID:", doc.id, " => ", doc.data());
+          // doc.id might be "white", "black", ...
+          // doc.data() has { AirBnB:"36.33", Amazon:"13.0", ... }
+          self.raceDocs.push({ race: doc.id, ...doc.data() });
+        });
+        console.log("Raw raceDocs array:", self.raceDocs);
+
+        self.dataByCompany = invertData(self.raceDocs);
+        console.log("Final dataByCompany array:", self.dataByCompany);
+
         self.loaded = true;
-        console.log(
-          "Tech Diversity Race data loaded from Firestore:",
-          self.data
-        );
       })
       .catch((error) => {
-        console.error("Error loading Tech Diversity Race data:", error);
+        console.error("Error loading TechDiversityRace3D data:", error);
       });
   };
 
-  self.setup = function () {
-    // Hide the p5 container.
+  // ------------------------------------------------
+  // 2) SETUP: hide p5 canvas, show #three-canvas, etc.
+  // ------------------------------------------------
+  this.setup = function () {
+    if (!self.loaded || !self.dataByCompany.length) {
+      console.log("TechDiversityRace3D: no data yet in setup.");
+      return;
+    }
+
+    // Hide p5 #canvas
     const p5CanvasDiv = document.getElementById("canvas");
-    if (p5CanvasDiv) {
-      p5CanvasDiv.style.display = "none";
-    }
+    if (p5CanvasDiv) p5CanvasDiv.style.display = "none";
 
-    // Show the three.js container.
+    // Show #three-canvas
     const threeCanvasDiv = document.getElementById("three-canvas");
-    if (threeCanvasDiv) {
-      threeCanvasDiv.style.display = "block";
+    if (threeCanvasDiv) threeCanvasDiv.style.display = "block";
+
+    initThree();
+
+    // For demonstration, pick the first company
+    let firstCompanyData = self.dataByCompany[0];
+    if (!firstCompanyData) {
+      console.log("No company found in dataByCompany.");
+      return;
     }
 
-    // Initialize our three.js scene
-    initThree();
-    createRacePie3D();
+    // Build the 3D pie
+    createRacePie3D(firstCompanyData);
+
+    // Start Three.js loop
     animate();
   };
 
-  self.destroy = function () {
+  // ------------------------------------------------
+  // 3) DESTROY: revert to p5, remove three.js DOM
+  // ------------------------------------------------
+  this.destroy = function () {
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
     }
-
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "block";
     }
 
-    // Remove the three.js canvas from the DOM so it doesn't accumulate.
     if (renderer && renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
 
+  // ------------------------------------------------
+  // 4) DRAW: p5 calls this each frame, but we do nothing
+  //    This prevents "draw is not a function" errors in p5
+  // ------------------------------------------------
+  this.draw = function () {
+    // We do nothing here; Three.js handles animation internally.
+  };
+
+  // ------------------------------------------------
+  // invertData(raceDocs): from "by race" to "by company"
+  // ------------------------------------------------
+  function invertData(raceDocs) {
+    let companiesMap = {};
+    raceDocs.forEach((doc) => {
+      const raceName = doc.race;
+      Object.entries(doc).forEach(([key, val]) => {
+        if (key === "race") return;
+        let numVal = parseFloat(val) || 0;
+        if (!companiesMap[key]) {
+          companiesMap[key] = { company: key };
+        }
+        companiesMap[key][raceName] = numVal;
+      });
+    });
+    return Object.values(companiesMap);
+  }
+
+  // ------------------------------------------------
+  // initThree(): set up scene, camera, lights, controls
+  // ------------------------------------------------
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202020);
 
-    // Camera Setuo
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-10, 10, 0);
     camera.lookAt(0, 0, 0);
 
-    // Renderer Setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
-
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Lighting Setup
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
@@ -105,29 +159,33 @@ export function TechDiversityRace3D() {
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    // Orbit Controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
 
-    // Handle window resizing
     window.addEventListener("resize", onWindowResize);
   }
 
-  function createRacePie3D() {
+  // ------------------------------------------------
+  // createRacePie3D(companyObj) - build an extruded arc for each race
+  // ------------------------------------------------
+  function createRacePie3D(companyObj) {
     raceGroup = new THREE.Group();
     scene.add(raceGroup);
 
-    const companyName = dataTable.columns[1];
-    const col = dataTable.getColumn(companyName);
-    const values = col.map(parseFloat);
-    const total = values.reduce((a, b) => a + b, 0);
+    // Adjust these categories to match your doc IDs
+    let categories = ["white", "black", "asian", "latino", "other"];
+    let values = categories.map((cat) => companyObj[cat] || 0);
+    let total = values.reduce((a, b) => a + b, 0);
+
     let startAngle = 0;
     const radius = 5;
     const height = 1;
 
     values.forEach((val, index) => {
-      const proportion = val / total;
+      const proportion = total > 0 ? val / total : 0;
+      if (proportion <= 0) return;
+
       const angle = proportion * Math.PI * 2;
       const color = raceColors[index % raceColors.length];
 
@@ -151,6 +209,9 @@ export function TechDiversityRace3D() {
     });
   }
 
+  // ------------------------------------------------
+  // animate: standard Three.js loop
+  // ------------------------------------------------
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -159,13 +220,16 @@ export function TechDiversityRace3D() {
     }
   }
 
+  // ------------------------------------------------
+  // onWindowResize
+  // ------------------------------------------------
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(getWidth(), getHeight());
   }
 
-  // Helpers to get the width/height of #three-canvas
+  // Helpers for #three-canvas size
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;
