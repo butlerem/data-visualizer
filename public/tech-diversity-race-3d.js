@@ -21,15 +21,26 @@ export function TechDiversityRace3D() {
     0xf4a6a0, // Pink
   ];
 
-  self.preload = function () {
-    dataTable = loadTable(
-      "./data/tech-diversity/race-2018.csv",
-      "csv",
-      "header",
-      () => {
+  this.preload = function () {
+    var self = this;
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        // Query the appropriate collection (for example, "tech_diversity_race")
+        return getDocs(collection(db, "tech_diversity_race"));
+      })
+      .then((querySnapshot) => {
+        // Convert the documents to an array of objects.
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-      }
-    );
+        console.log(
+          "Tech Diversity Race data loaded from Firestore:",
+          self.data
+        );
+      })
+      .catch((error) => {
+        console.error("Error loading Tech Diversity Race data:", error);
+      });
   };
 
   self.setup = function () {

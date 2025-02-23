@@ -24,18 +24,20 @@
     <script src="helper-functions.js"></script>
     <script src="gallery.js"></script>
     <script src="pie-chart.js"></script>
+    <!-- You can remove the extra script tags for the visualizations -->
   </head>
   <body>
     <div id="app" class="container">
       <div id="menu">
-        <h3 id="menu-title">Data Visualisation Dashboard</h3>
-        <ul id="visuals-menu"></ul>
+        <ul id="visuals-menu">
+          <h3>Data Visualisation Dashboard</h3>
+        </ul>
       </div>
       <div id="main">
-        <h3 id="visual-title">Visualization Title</h3>
+        <h3 id="visual-title"></h3>
         <div id="canvas"></div>
         <div id="sliders"></div>
-        <!-- three.js will attach its WebGL canvas (renderer.domElement) here -->
+        <!-- three.js will attach its WebGL canvas here -->
         <div id="three-canvas"></div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-function TechDiversityRace() {
+export function TechDiversityRace() {
   this.name = "Tech Diversity: Race";
   this.id = "tech-diversity-race";
   this.title = "Tech Diversity by Race";
@@ -6,16 +6,22 @@ function TechDiversityRace() {
 
   this.preload = function () {
     var self = this;
-    this.data = loadTable(
-      "./data/tech-diversity/race-2018.csv",
-      "csv",
-      "header",
-      // Callback function to set the value
-      // this.loaded to true.
-      function (table) {
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "tech_diversity_race"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-      }
-    );
+        console.log(
+          "Tech Diversity Race data loaded from Firestore:",
+          self.data
+        );
+      })
+      .catch((error) => {
+        console.error("Error loading Tech Diversity Race data:", error);
+      });
   };
 
   this.setup = function () {

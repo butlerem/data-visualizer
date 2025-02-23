@@ -1,4 +1,4 @@
-function TechDiversityGender() {
+export function TechDiversityGender() {
   this.name = "Tech Diversity: Gender";
   this.id = "tech-diversity-gender";
   this.title = "Tech Diversity by Gender Percentage";
@@ -36,20 +36,24 @@ function TechDiversityGender() {
   this.femaleColour = color(50, 120, 140, 255);
   this.maleColour = color(70, 70, 140, 255);
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
   this.preload = function () {
     var self = this;
-    this.data = loadTable(
-      "./data/tech-diversity/gender-2018.csv",
-      "csv",
-      "header",
-      // Callback function to set the value
-      // this.loaded to true.
-      function (table) {
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "tech_diversity_gender"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-      }
-    );
+        console.log(
+          "Tech Diversity Gender data loaded from Firestore:",
+          self.data
+        );
+      })
+      .catch((error) => {
+        console.error("Error loading Tech Diversity Gender data:", error);
+      });
   };
 
   this.setup = function () {

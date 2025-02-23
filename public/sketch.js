@@ -1,11 +1,11 @@
 import { TechDiversityRace } from "./tech-diversity-race.js";
 import { TechDiversityGender3D } from "./tech-diversity-gender-3d.js";
 import { TechDiversityRace3D } from "./tech-diversity-race-3d.js";
-import { PayGapByJob2017 } from "./pay-gap-by-job-2017.js";
+import { PayGapByJob2017 } from "./pay-gap-by-job.js";
 import { PayGapTimeSeries } from "./pay-gap-time-series.js";
 import { ClimateChange } from "./climate-change.js";
 import { EducationCompletionRate } from "./education-completion-rate.js";
-import { EducationGenderRadarChart } from "./education-gender-radar-chart.js";
+import { EducationGenderRadarChart } from "./education-gender-radar.js";
 
 let gallery;
 let canvasContainer;

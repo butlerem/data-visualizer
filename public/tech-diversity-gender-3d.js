@@ -24,16 +24,24 @@ export function TechDiversityGender3D() {
   const femaleColor = 0xf2b5a0;
   const maleColor = 0x8fbcbb;
 
-  // 1) preload() => Loads data using p5's loadTable().
-  self.preload = function () {
-    dataTable = loadTable(
-      "./data/tech-diversity/gender-2018.csv",
-      "csv",
-      "header",
-      () => {
+  this.preload = function () {
+    var self = this;
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "tech_diversity_gender"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-      }
-    );
+        console.log(
+          "Tech Diversity Gender data loaded from Firestore:",
+          self.data
+        );
+      })
+      .catch((error) => {
+        console.error("Error loading Tech Diversity Gender data:", error);
+      });
   };
 
   self.setup = function () {

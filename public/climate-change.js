@@ -1,18 +1,21 @@
-function ClimateChange() {
+export function ClimateChange() {
   this.name = "Climate Change";
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
+
   this.loaded = false;
   this.xAxisLabel = "Year";
   this.yAxisLabel = "Change in ℃";
-  var marginSize = 35;
+
+  // We'll set margins after p5 is ready (in setup).
+  let marginSize = 35;
 
   this.layout = {
     marginSize: marginSize,
-    leftMargin: marginSize * 2,
-    rightMargin: width - marginSize * 2,
-    topMargin: marginSize,
-    bottomMargin: height - marginSize * 2,
+    leftMargin: null,
+    rightMargin: null,
+    topMargin: null,
+    bottomMargin: null,
     pad: 5,
     grid: false,
     numXTickLabels: 8,
@@ -26,14 +29,22 @@ function ClimateChange() {
     },
   };
 
+  // Firestore data will go here as an array of objects.
+  // e.g. [{ year: 1890, temperature: 0.2 }, ...]
+  this.data = [];
+
+  // ------------------
+  // 1) Preload: fetch data from Firestore
+  // ------------------
   this.preload = function () {
-    var self = this;
+    const self = this;
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
+        const db = getFirestore(window.app); // Make sure window.app is your initialized Firebase app
         return getDocs(collection(db, "surface_temp"));
       })
       .then((querySnapshot) => {
+        // Store an array of doc.data() in self.data
         self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
         console.log("Data loaded from Firestore:", self.data);
@@ -42,238 +53,235 @@ function ClimateChange() {
         console.error("Error loading data:", error);
       });
   };
-}
 
-this.setup = function () {
-  textSize(16);
-  textAlign("center", "center");
+  // ------------------
+  // 2) Setup: do all your p5-related initialization
+  // ------------------
+  this.setup = function () {
+    // Because we are in p5, let's set up margins only after p5 has given us width/height.
+    // If you have a createCanvas(...) somewhere else, that's fine—just ensure width/height exist.
+    this.layout.leftMargin = marginSize * 2;
+    this.layout.rightMargin = width - marginSize * 2;
+    this.layout.topMargin = marginSize;
+    this.layout.bottomMargin = height - marginSize * 2;
 
-  // Set min and max years: assumes data is sorted by year.
-  this.minYear = this.data.getNum(0, "year");
-  this.maxYear = this.data.getNum(this.data.getRowCount() - 1, "year");
+    textSize(16);
+    textAlign(CENTER, CENTER);
 
-  // Find min and max temperature for mapping to canvas height.
-  this.minTemperature = min(this.data.getColumn("temperature"));
-  this.maxTemperature = max(this.data.getColumn("temperature"));
+    // Make sure we have data before calculating stats
+    if (!this.loaded || !this.data.length) {
+      console.warn("Data is not loaded yet or is empty");
+      return;
+    }
 
-  // Find mean temperature to plot average marker.
-  this.meanTemperature = mean(this.data.getColumn("temperature"));
+    // Sort data by year (if it’s not already sorted)
+    this.data.sort((a, b) => a.year - b.year);
 
-  // Count the number of frames drawn since the visualisation
-  // started so that we can animate the plot.
-  this.frameCount = 0;
+    // 1. Find min/max year
+    let allYears = this.data.map((d) => d.year);
+    this.minYear = Math.min(...allYears);
+    this.maxYear = Math.max(...allYears);
 
-  // Create sliders to control start and end years. Default to
-  // visualise full range.
-  this.startSlider = createSlider(
-    this.minYear,
-    this.maxYear - 1,
-    this.minYear,
-    1
-  );
-  this.startSlider.parent("sliders"); // Attach to container
-  this.startSlider.style("width", "300px");
+    // 2. Find min/max temperature
+    let allTemps = this.data.map((d) => d.temperature);
+    this.minTemperature = Math.min(...allTemps);
+    this.maxTemperature = Math.max(...allTemps);
 
-  this.endSlider = createSlider(
-    this.minYear + 1,
-    this.maxYear,
-    this.maxYear,
-    1
-  );
-  this.endSlider.parent("sliders"); // Attach to container
-  this.endSlider.style("width", "300px");
+    // 3. Mean temperature
+    let sumTemps = allTemps.reduce((acc, val) => acc + val, 0);
+    this.meanTemperature = sumTemps / this.data.length;
 
-  // Create a single label for both sliders
-  this.yearLabel = createP(
-    "Start Year: " +
-      this.startSlider.value() +
-      " | End Year: " +
-      this.endSlider.value()
-  );
-  this.yearLabel.parent("sliders");
-  this.yearLabel.style("color", "#fff");
+    // 4. We’ll count frames for animation
+    this.frameCount = 0;
 
-  // Update label dynamically
-  this.startSlider.input(() => {
-    this.yearLabel.html(
-      "Start Year: " +
-        this.startSlider.value() +
-        " | End Year: " +
-        this.endSlider.value()
+    // 5. Create sliders
+    this.startSlider = createSlider(
+      this.minYear,
+      this.maxYear - 1,
+      this.minYear,
+      1
     );
-  });
+    this.startSlider.parent("sliders");
+    this.startSlider.style("width", "300px");
 
-  this.endSlider.input(() => {
-    this.yearLabel.html(
-      "Start Year: " +
-        this.startSlider.value() +
-        " | End Year: " +
-        this.endSlider.value()
+    this.endSlider = createSlider(
+      this.minYear + 1,
+      this.maxYear,
+      this.maxYear,
+      1
     );
-  });
-};
+    this.endSlider.parent("sliders");
+    this.endSlider.style("width", "300px");
 
-this.destroy = function () {
-  this.startSlider.remove();
-  this.endSlider.remove();
-  this.yearLabel.remove();
-};
+    // 6. Single label for both sliders
+    this.yearLabel = createP("Start Year: 0 | End Year: 0");
+    this.yearLabel.parent("sliders");
+    this.yearLabel.style("color", "#fff");
 
-this.draw = function () {
-  if (!this.loaded) {
-    console.log("Data not yet loaded");
-    return;
-  }
-
-  // Prevent slider ranges overlapping.
-  if (this.startSlider.value() >= this.endSlider.value()) {
-    this.startSlider.value(this.endSlider.value() - 1);
-  }
-  this.startYear = this.startSlider.value();
-  this.endYear = this.endSlider.value();
-
-  // Draw all y-axis tick labels.
-  drawYAxisTickLabels(
-    this.minTemperature,
-    this.maxTemperature,
-    this.layout,
-    this.mapTemperatureToHeight.bind(this),
-    1
-  );
-
-  // Draw x and y axis.
-  drawAxis(this.layout);
-
-  // Draw x and y axis labels.
-  drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
-
-  // Plot average line.
-  stroke(200);
-  strokeWeight(1);
-  line(
-    this.layout.leftMargin,
-    this.mapTemperatureToHeight(this.meanTemperature),
-    this.layout.rightMargin,
-    this.mapTemperatureToHeight(this.meanTemperature)
-  );
-
-  // Plot all temperatures between startYear and endYear using the
-  // width of the canvas minus margins.
-  var previous;
-  var numYears = this.endYear - this.startYear;
-  var segmentWidth = this.layout.plotWidth() / numYears;
-
-  // Count the number of years plotted each frame to create
-  // animation effect.
-  var yearCount = 0;
-
-  // Loop over all rows but only plot those in range.
-  for (var i = 0; i < this.data.getRowCount(); i++) {
-    // Create an object to store data for the current year.
-    var current = {
-      // Convert strings to numbers.
-      year: this.data.getNum(i, "year"),
-      temperature: this.data.getNum(i, "temperature"),
+    // Update label dynamically
+    const updateLabel = () => {
+      this.yearLabel.html(
+        "Start Year: " +
+          this.startSlider.value() +
+          " | End Year: " +
+          this.endSlider.value()
+      );
     };
+    this.startSlider.input(updateLabel);
+    this.endSlider.input(updateLabel);
+    updateLabel(); // set initial label text
+  };
 
-    if (
-      previous != null &&
-      current.year > this.startYear &&
-      current.year <= this.endYear
-    ) {
-      // Draw background gradient to represent colour temperature of
-      // the current year.
-      noStroke();
-      fill(this.mapTemperatureToColour(current.temperature));
-      rect(
-        this.mapYearToWidth(previous.year),
-        this.layout.topMargin,
-        segmentWidth,
-        this.layout.plotHeight()
-      );
+  // ------------------
+  // 3) Destroy: remove slider UI, etc.
+  // ------------------
+  this.destroy = function () {
+    // Only remove if they exist
+    if (this.startSlider) this.startSlider.remove();
+    if (this.endSlider) this.endSlider.remove();
+    if (this.yearLabel) this.yearLabel.remove();
+  };
 
-      // Draw line segment connecting previous year to current
-      // year temperature.
-      stroke(200);
-      line(
-        this.mapYearToWidth(previous.year),
-        this.mapTemperatureToHeight(previous.temperature),
-        this.mapYearToWidth(current.year),
-        this.mapTemperatureToHeight(current.temperature)
-      );
-
-      // The number of x-axis labels to skip so that only
-      // numXTickLabels are drawn.
-      var xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
-
-      // Draw the tick label marking the start of the previous year.
-      if (yearCount % xLabelSkip == 0) {
-        drawXAxisTickLabel(
-          previous.year,
-          this.layout,
-          this.mapYearToWidth.bind(this)
-        );
-      }
-
-      // When six or fewer years are displayed also draw the final
-      // year x tick label.
-      if (numYears <= 6 && yearCount == numYears - 1) {
-        drawXAxisTickLabel(
-          current.year,
-          this.layout,
-          this.mapYearToWidth.bind(this)
-        );
-      }
-
-      yearCount++;
+  // ------------------
+  // 4) Draw: main p5 loop
+  // ------------------
+  this.draw = function () {
+    // If data not loaded yet, skip drawing
+    if (!this.loaded || !this.data.length) {
+      console.log("Data not yet loaded or empty");
+      return;
     }
 
-    // Stop drawing this frame when the number of years drawn is
-    // equal to the frame count. This creates the animated effect
-    // over successive frames.
-    if (yearCount >= this.frameCount) {
-      break;
+    // Make sure slider constraints are valid (start < end)
+    if (this.startSlider.value() >= this.endSlider.value()) {
+      this.startSlider.value(this.endSlider.value() - 1);
     }
 
-    // Assign current year to previous year so that it is available
-    // during the next iteration of this loop to give us the start
-    // position of the next line segment.
-    previous = current;
-  }
+    this.startYear = parseInt(this.startSlider.value());
+    this.endYear = parseInt(this.endSlider.value());
+    let numYears = this.endYear - this.startYear;
 
-  // Count the number of frames since this visualisation
-  // started. This is used in creating the animation effect and to
-  // stop the main p5 draw loop when all years have been drawn.
-  this.frameCount++;
+    // Draw your axes, labels, etc.
+    drawYAxisTickLabels(
+      this.minTemperature,
+      this.maxTemperature,
+      this.layout,
+      this.mapTemperatureToHeight.bind(this),
+      1
+    );
+    drawAxis(this.layout);
+    drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-  // Stop animation when all years have been drawn.
-  if (this.frameCount >= numYears) {
-    //noLoop();
-  }
-};
+    // Plot average line
+    stroke(200);
+    strokeWeight(1);
+    line(
+      this.layout.leftMargin,
+      this.mapTemperatureToHeight(this.meanTemperature),
+      this.layout.rightMargin,
+      this.mapTemperatureToHeight(this.meanTemperature)
+    );
 
-this.mapYearToWidth = function (value) {
-  return map(
-    value,
-    this.startYear,
-    this.endYear,
-    this.layout.leftMargin, // Draw left-to-right from margin.
-    this.layout.rightMargin
-  );
-};
+    // For the animation effect
+    let segmentWidth = this.layout.plotWidth() / numYears;
+    let previous = null;
+    let yearCount = 0;
 
-this.mapTemperatureToHeight = function (value) {
-  return map(
-    value,
-    this.minTemperature,
-    this.maxTemperature,
-    this.layout.bottomMargin, // Lower temperature at bottom.
-    this.layout.topMargin
-  ); // Higher temperature at top.
-};
+    // Because it’s an array, we use i < this.data.length
+    for (let i = 0; i < this.data.length; i++) {
+      // current object
+      let current = {
+        year: Number(this.data[i].year),
+        temperature: Number(this.data[i].temperature),
+      };
 
-this.mapTemperatureToColour = function (value) {
-  var red = map(value, this.minTemperature, this.maxTemperature, 255, 180);
-  var blue = map(value, this.minTemperature, this.maxTemperature, 180, 255);
-  return color(red, 160, blue, 80); // More transparency (alpha = 80)
-};
+      // We only start drawing if previous is set and the year is in slider range
+      if (
+        previous &&
+        current.year > this.startYear &&
+        current.year <= this.endYear
+      ) {
+        // 1. Background rectangle for the “heat” color
+        noStroke();
+        fill(this.mapTemperatureToColour(current.temperature));
+        rect(
+          this.mapYearToWidth(previous.year),
+          this.layout.topMargin,
+          segmentWidth,
+          this.layout.plotHeight()
+        );
+
+        // 2. Line from previous point to current
+        stroke(200);
+        line(
+          this.mapYearToWidth(previous.year),
+          this.mapTemperatureToHeight(previous.temperature),
+          this.mapYearToWidth(current.year),
+          this.mapTemperatureToHeight(current.temperature)
+        );
+
+        // 3. Possibly draw X-axis tick labels
+        let xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
+        if (yearCount % xLabelSkip === 0) {
+          drawXAxisTickLabel(
+            previous.year,
+            this.layout,
+            this.mapYearToWidth.bind(this)
+          );
+        }
+        // Draw final x tick label if only a few years
+        if (numYears <= 6 && yearCount === numYears - 1) {
+          drawXAxisTickLabel(
+            current.year,
+            this.layout,
+            this.mapYearToWidth.bind(this)
+          );
+        }
+
+        yearCount++;
+      }
+
+      // Stop after a certain number of frames for animation
+      if (yearCount >= this.frameCount) {
+        break;
+      }
+
+      // Move on
+      previous = current;
+    }
+
+    this.frameCount++;
+    if (this.frameCount >= numYears) {
+      // noLoop(); // optional if you want to stop animating
+    }
+  };
+
+  // ------------------
+  // 5) Helper functions
+  // ------------------
+  this.mapYearToWidth = function (year) {
+    return map(
+      year,
+      this.startYear,
+      this.endYear,
+      this.layout.leftMargin,
+      this.layout.rightMargin
+    );
+  };
+
+  this.mapTemperatureToHeight = function (temp) {
+    return map(
+      temp,
+      this.minTemperature,
+      this.maxTemperature,
+      this.layout.bottomMargin, // lower temps at bottom
+      this.layout.topMargin // higher temps at top
+    );
+  };
+
+  this.mapTemperatureToColour = function (temp) {
+    let red = map(temp, this.minTemperature, this.maxTemperature, 255, 180);
+    let blue = map(temp, this.minTemperature, this.maxTemperature, 180, 255);
+    return color(red, 160, blue, 80);
+  };
+}

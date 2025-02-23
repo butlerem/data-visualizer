@@ -1,4 +1,4 @@
-function EducationGenderRadarChart() {
+export function EducationGenderRadarChart() {
   this.name = "Education Gender Radar";
   this.id = "education-gender-radar";
   this.title = "Education Gender Distribution (2023)";
@@ -8,14 +8,20 @@ function EducationGenderRadarChart() {
   this.graphics = null;
 
   this.preload = function () {
-    this.data = loadTable(
-      "./data/education/education_gender.csv",
-      "csv",
-      "header",
-      () => {
-        this.loaded = true;
-      }
-    );
+    var self = this;
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "education_gender"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
+        self.loaded = true;
+        console.log("Education Gender data loaded from Firestore:", self.data);
+      })
+      .catch((error) => {
+        console.error("Error loading Eucation Gender data:", error);
+      });
   };
 
   this.setup = function () {

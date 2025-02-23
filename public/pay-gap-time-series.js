@@ -1,4 +1,4 @@
-function PayGapTimeSeries() {
+export function PayGapTimeSeries() {
   this.name = "Pay Gap Over Time";
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
@@ -28,15 +28,19 @@ function PayGapTimeSeries() {
 
   this.preload = function () {
     var self = this;
-    this.data = loadTable(
-      "./data/pay-gap/all-employees-hourly-pay-by-gender-1997-2017.csv",
-      "csv",
-      "header",
-      function () {
+    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
+      .then(({ getFirestore, collection, getDocs }) => {
+        const db = getFirestore(window.app);
+        return getDocs(collection(db, "pay_gap_by_year"));
+      })
+      .then((querySnapshot) => {
+        self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-        console.log("Data loaded!");
-      }
-    );
+        console.log("Pay Gap By Year Data loaded from Firestore:", self.data);
+      })
+      .catch((error) => {
+        console.error("Error loading Pay Gap By Year data:", error);
+      });
   };
 
   this.setup = function () {
