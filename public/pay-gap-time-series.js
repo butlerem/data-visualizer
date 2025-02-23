@@ -2,11 +2,16 @@ export function PayGapTimeSeries() {
   this.name = "Pay Gap Over Time";
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
+
   this.loaded = false;
   this.xAxisLabel = "Year";
   this.yAxisLabel = "%";
-  var marginSize = 35;
 
+  // We'll store Firestore array here
+  this.data = [];
+
+  // p5 layout
+  let marginSize = 35;
   this.layout = {
     marginSize: marginSize,
     leftMargin: marginSize * 2,
@@ -17,7 +22,6 @@ export function PayGapTimeSeries() {
     grid: true,
     numXTickLabels: 10,
     numYTickLabels: 8,
-
     plotWidth: function () {
       return this.rightMargin - this.leftMargin;
     },
@@ -26,8 +30,23 @@ export function PayGapTimeSeries() {
     },
   };
 
+  // We'll keep track of the year range and pay gap range
+  this.globalStartYear = 1997;
+  this.globalEndYear = 2017;
+  this.minPayGap = 0;
+  this.maxPayGap = 30;
+
+  // We'll make a slider for startYear
+  this.yearSlider = null;
+
+  // For animation
+  this.frameCount = 0;
+
+  // -----------
+  // 1) PRELOAD
+  // -----------
   this.preload = function () {
-    var self = this;
+    const self = this;
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
         const db = getFirestore(window.app);
@@ -43,23 +62,35 @@ export function PayGapTimeSeries() {
       });
   };
 
+  // -----------
+  // 2) SETUP
+  // -----------
   this.setup = function () {
     textSize(16);
-    textAlign("center", "center");
+    textAlign(CENTER, CENTER);
 
-    this.globalStartYear = this.data ? this.data.getNum(0, "year") : 1997;
-    this.globalEndYear = this.data
-      ? this.data.getNum(this.data.getRowCount() - 1, "year")
-      : 2017;
+    if (!this.loaded || !this.data.length) {
+      console.log("PayGapTimeSeries: no data yet in setup.");
+      return;
+    }
 
-    this.startYear = this.globalStartYear;
-    this.endYear = this.globalEndYear;
+    // Sort data by year
+    this.data.forEach((d) => {
+      d.year = parseFloat(d.year) || 2000; // convert year to number
+      d.pay_gap = parseFloat(d.pay_gap) || 0;
+    });
+    this.data.sort((a, b) => a.year - b.year);
 
-    // Define min/max pay gap
-    this.minPayGap = 0;
-    this.maxPayGap = this.data ? max(this.data.getColumn("pay_gap")) : 30;
+    // globalStartYear = earliest year
+    this.globalStartYear = this.data[0].year;
+    this.globalEndYear = this.data[this.data.length - 1].year;
 
-    // Create the slider in #sliders
+    // min/max pay gap
+    let payGaps = this.data.map((d) => d.pay_gap);
+    this.minPayGap = Math.min(...payGaps);
+    this.maxPayGap = Math.max(...payGaps);
+
+    // Create a slider for choosing startYear
     this.yearSlider = createSlider(
       this.globalStartYear,
       this.globalEndYear - 2,
@@ -69,12 +100,11 @@ export function PayGapTimeSeries() {
     this.yearSlider.parent("sliders");
     this.yearSlider.style("width", "300px");
 
-    this.frameCount = 0; // Initialize animation frame counter
+    this.frameCount = 0; // reset animation
   };
 
-  // 3) destroy => remove any UI
+  // 3) DESTROY
   this.destroy = function () {
-    console.log("PayGapTimeSeries: destroy()");
     if (this.yearSlider) {
       this.yearSlider.remove();
     }
@@ -84,15 +114,16 @@ export function PayGapTimeSeries() {
     }
   };
 
-  // 4) draw => called every frame
+  // 4) DRAW
   this.draw = function () {
-    if (!this.loaded) {
+    if (!this.loaded || !this.data.length) {
       console.log("PayGapTimeSeries: data not yet loaded in draw()");
       return;
     }
 
-    // Use slider's current value
-    this.startYear = this.yearSlider.value();
+    // Which startYear did we pick?
+    let startYear = parseInt(this.yearSlider.value());
+    let endYear = this.globalEndYear;
 
     // Draw axis
     drawYAxisTickLabels(
@@ -105,77 +136,72 @@ export function PayGapTimeSeries() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    let numYears = this.endYear - this.startYear;
-    let maxFrames = this.data.getRowCount(); // Total data points
+    // Draw X tick lines/labels
+    let numYears = endYear - startYear;
+    let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
+    for (let y = startYear; y <= endYear; y++) {
+      if ((y - startYear) % xTickSkip === 0) {
+        let x = this.mapYearToWidth(y, startYear, endYear);
+        stroke(150);
+        line(x, this.layout.topMargin, x, this.layout.bottomMargin);
+        noStroke();
+        fill(255);
+        text(y, x, this.layout.bottomMargin + 15);
+      }
+    }
 
-    stroke(200);
+    // Animation: we gradually show more data points
+    let maxFrames = this.data.length;
+    stroke(255);
     strokeWeight(2);
     noFill();
 
-    // 🔹 **Fix: Ensure Grid Lines Always Render**
-    let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    for (let year = this.startYear; year <= this.endYear; year++) {
-      if ((year - this.startYear) % xTickSkip === 0) {
-        let x = this.mapYearToWidth(year);
-        stroke(150); // Grid color
-        line(x, this.layout.topMargin, x, this.layout.bottomMargin); // Vertical grid lines
-        noStroke();
-        fill(255);
-        text(year, x, this.layout.bottomMargin + 15);
-      }
-    }
-
-    // 🔹 **Now, Draw the Animated Line**
     let previous = null;
-    let yearCount = 0; // Controls animation speed
+    let yearCount = 0; // how many we have drawn so far
+    for (let i = 0; i < this.data.length; i++) {
+      let d = this.data[i];
+      if (d.year < startYear) continue; // skip earlier years
+      if (yearCount >= this.frameCount) break; // animation limit
 
-    for (let i = 0; i < this.data.getRowCount(); i++) {
-      let year = this.data.getNum(i, "year");
-      if (year < this.startYear) continue;
+      if (!previous && d.year >= startYear) {
+        previous = d;
+        yearCount++;
+        continue;
+      }
 
-      if (yearCount >= this.frameCount) break; // Stop drawing after reaching frame limit
-
-      let current = {
-        year: year,
-        payGap: this.data.getNum(i, "pay_gap"),
-      };
-
+      // draw line from previous to d
       if (previous) {
-        // Draw line progressively
-        stroke(255);
         line(
-          this.mapYearToWidth(previous.year),
-          this.mapPayGapToHeight(previous.payGap),
-          this.mapYearToWidth(current.year),
-          this.mapPayGapToHeight(current.payGap)
+          this.mapYearToWidth(previous.year, startYear, endYear),
+          this.mapPayGapToHeight(previous.pay_gap),
+          this.mapYearToWidth(d.year, startYear, endYear),
+          this.mapPayGapToHeight(d.pay_gap)
         );
       }
-
-      previous = current;
+      previous = d;
       yearCount++;
     }
 
-    this.frameCount++; // Increment animation frame count
-
-    if (this.frameCount >= maxFrames) {
-      this.frameCount = maxFrames; // Stop animation when fully drawn
+    this.frameCount++;
+    if (this.frameCount > maxFrames) {
+      this.frameCount = maxFrames;
     }
   };
 
   // Helpers
-  this.mapYearToWidth = function (value) {
+  this.mapYearToWidth = function (year, startYear, endYear) {
     return map(
-      value,
-      this.startYear,
-      this.endYear,
+      year,
+      startYear,
+      endYear,
       this.layout.leftMargin,
       this.layout.rightMargin
     );
   };
 
-  this.mapPayGapToHeight = function (value) {
+  this.mapPayGapToHeight = function (gap) {
     return map(
-      value,
+      gap,
       this.minPayGap,
       this.maxPayGap,
       this.layout.bottomMargin,
