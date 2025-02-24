@@ -1,4 +1,4 @@
-function Gallery() {
+export function Gallery() {
   this.visuals = [];
   this.selectedVisual = null;
   this.selectedVisual2 = null; // New property for the second visual

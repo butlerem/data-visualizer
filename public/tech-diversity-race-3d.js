@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { PieChart } from "./pie-chart.js";
 
 export function TechDiversityRace3D() {
   const self = this;
@@ -139,7 +140,7 @@ export function TechDiversityRace3D() {
   // ------------------------------------------------
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x202020);
+    scene.background = new THREE.Color(0x1c1c1f);
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-10, 10, 0);

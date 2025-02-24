@@ -5,15 +5,11 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 export function TechDiversityGender3D() {
   const self = this;
-
-  // Basic info for your gallery
   self.name = "Tech Diversity: Gender (3D)";
   self.id = "tech-diversity-gender-3d";
   self.title = "Tech Diversity by Gender Percentage (3D)";
-
-  // We'll store Firestore docs as an array of objects
+  self.loaded = false;
   self.data = [];
-  self.loaded = false; // set to true when Firestore data is loaded
 
   // Three.js variables
   let scene, camera, renderer, controls, barsGroup;
@@ -28,9 +24,7 @@ export function TechDiversityGender3D() {
   const femaleColor = 0xf2b5a0;
   const maleColor = 0x8fbcbb;
 
-  // ------------------------------------------------
-  // 1) PRELOAD: fetch from Firestore
-  // ------------------------------------------------
+  // Preload: load Firestore docs
   this.preload = function () {
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
@@ -51,9 +45,7 @@ export function TechDiversityGender3D() {
       });
   };
 
-  // ------------------------------------------------
-  // 2) SETUP: hide p5 canvas, show Three.js, etc.
-  // ------------------------------------------------
+  // Setup: hide p5 canvas, show three.js container, init scene
   this.setup = function () {
     // If data not loaded or empty, skip
     if (!self.loaded || !self.data.length) {
@@ -74,26 +66,20 @@ export function TechDiversityGender3D() {
     }
 
     // Init Three.js
-    initThree();
-
     // Build bars & labels
+    // Start the render loop
+    initThree();
     createBars();
     createAxisLabels();
-
-    // Start the render loop
     animate();
   };
 
-  // ------------------------------------------------
-  // 3) DRAW: p5 calls this, but we do nothing in 3D
-  // ------------------------------------------------
+  // Draw: p5 calls this, but we do nothing in Three.js
   this.draw = function () {
     // Empty. We rely on Three.js's animate() with requestAnimationFrame.
   };
 
-  // ------------------------------------------------
-  // 4) DESTROY: revert to p5 canvas, remove Three.js DOM
-  // ------------------------------------------------
+  // 4) DESTROY: revert to p5, remove Three.js DOM
   this.destroy = function () {
     // Hide Three.js
     const threeCanvasDiv = document.getElementById("three-canvas");
@@ -111,12 +97,10 @@ export function TechDiversityGender3D() {
     }
   };
 
-  // ------------------------------------------------
-  // initThree(): basic scene/camera/renderer setup
-  // ------------------------------------------------
+  // --- THREE.JS INIT ---
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x202020);
+    scene.background = new THREE.Color(0x1c1c1f);
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-25, 10, 0);
@@ -124,19 +108,21 @@ export function TechDiversityGender3D() {
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
+
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Lighting
+    // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
+
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    // We no longer have dataTable, so let's compute grid size from this.data length
+    // Compute grid size from this.data length
     let numCompanies = self.data.length;
     let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // a bit of padding
 
@@ -156,9 +142,7 @@ export function TechDiversityGender3D() {
     window.addEventListener("resize", onWindowResize);
   }
 
-  // ------------------------------------------------
-  // createBars(): build bar geometry from Firestore array
-  // ------------------------------------------------
+  // Create Bars
   function createBars() {
     let numCompanies = self.data.length;
     let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // center them
@@ -197,10 +181,7 @@ export function TechDiversityGender3D() {
       barsGroup.add(companyGroup);
     }
   }
-
-  // ------------------------------------------------
-  // createAxisLabels(): add text labels for axes & companies
-  // ------------------------------------------------
+  // Create Axis Labels
   function createAxisLabels() {
     const loader = new FontLoader();
     loader.load(
@@ -236,9 +217,6 @@ export function TechDiversityGender3D() {
     );
   }
 
-  // ------------------------------------------------
-  // addYAxisTicks(font): draws % ticks from 0% to 100%
-  // ------------------------------------------------
   function addYAxisTicks(font) {
     const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
     const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -272,9 +250,7 @@ export function TechDiversityGender3D() {
     }
   }
 
-  // ------------------------------------------------
-  // addCompanyLabels(font): display each company's name near its bars
-  // ------------------------------------------------
+  // X-Axis: Display each company's name near its bars
   function addCompanyLabels(font) {
     const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
@@ -299,9 +275,8 @@ export function TechDiversityGender3D() {
     }
   }
 
-  // ------------------------------------------------
   // animate: main Three.js loop
-  // ------------------------------------------------
+
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -310,9 +285,8 @@ export function TechDiversityGender3D() {
     }
   }
 
-  // ------------------------------------------------
   // onWindowResize
-  // ------------------------------------------------
+
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();

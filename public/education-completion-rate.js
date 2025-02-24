@@ -1,160 +1,126 @@
+import {
+  createLayout,
+  createYearSliders,
+  removeYearSliders,
+  drawYAxisTickLabels,
+  drawAxis,
+  drawAxisLabels,
+} from "./helper-functions.js";
+
 export function EducationCompletionRate() {
   this.name = "Education Completion";
   this.id = "education-completion-rate";
   this.title = "Female Primary Education Completion Rate Over Time (by Region)";
-
   this.loaded = false;
-
-  // These labels appear on your gallery UI
   this.xAxisLabel = "Year";
   this.yAxisLabel = "% Completion";
 
+  // Data storage: raw data and grouped data by region
+  this.rawData = [];
+  this.data = {}; // e.g. { "Africa": [{ year, rate }, ...], ... }
+  this.regionColors = {};
+
+  // Global year range
+  this.globalStartYear = 1990;
+  this.globalEndYear = 2023;
+
   // p5 layout settings
-  let marginSize = 35;
-  this.layout = {
-    marginSize: marginSize,
-    leftMargin: marginSize * 2,
-    rightMargin: width - marginSize,
-    topMargin: marginSize,
-    bottomMargin: height - marginSize * 2,
-    pad: 5,
+  const marginSize = 35;
+  this.layout = createLayout(marginSize, width, height, {
     grid: true,
     numXTickLabels: 10,
     numYTickLabels: 8,
-    plotWidth: function () {
-      return this.rightMargin - this.leftMargin;
-    },
-    plotHeight: function () {
-      return this.bottomMargin - this.topMargin;
-    },
-  };
+  });
 
-  // ---------------------
-  // Storing data in two forms:
-  //   1) this.rawData: array of docs from Firestore
-  //   2) this.data: object grouped by region, e.g.
-  //      { "Africa": [ { year:1990, rate:50.1 }, ... ], "Asia": [...], ... }
-  // ---------------------
-  this.rawData = [];
-  this.data = {}; // Processed data, grouped by region
-  this.regionColors = {};
+  // UI elements for year range
+  this.sliders = null;
 
-  // --------------
-  // 1) PRELOAD: get Firestore data
-  // --------------
+  // For animation
+  this.frameCount = 0;
+
+  // PRELOAD: fetch education completion data
   this.preload = function () {
     const self = this;
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app); // ensure window.app is your initialized Firebase app
+        const db = getFirestore(window.app);
         return getDocs(collection(db, "primary_education_completion"));
       })
       .then((querySnapshot) => {
-        // Save raw array
         self.rawData = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-        console.log("Education data loaded from Firestore:", self.rawData);
+        console.log("Education Data loaded:", self.rawData);
       })
       .catch((error) => {
-        console.error("Error loading data from Firestore:", error);
+        console.error("Error loading Education data:", error);
       });
   };
 
-  // --------------
-  // 2) SETUP: transform rawData, compute min/max, create slider, etc.
-  // --------------
+  // SETUP: group data by region, compute averages, and set up UI
   this.setup = function () {
-    // If data not loaded or empty, skip
     if (!this.loaded || !this.rawData.length) {
-      console.warn("Education data not loaded or is empty.");
+      console.warn("EducationCompletionRate: Data not loaded or empty.");
       return;
     }
 
     textSize(16);
     textAlign(CENTER, CENTER);
 
-    // Step A: Group data by region, collecting multiple entries per year
-    let regionYearValues = {};
-    // regionYearValues might look like:
-    // { "Africa": { 1990: [50.1, 49.7], 1991: [52.3, 51.8] }, "Asia": {...}, ... }
-
-    for (let i = 0; i < this.rawData.length; i++) {
-      const row = this.rawData[i];
+    // Group rawData by region and year
+    const regionYearValues = {};
+    for (let row of this.rawData) {
       const region = row["Region"];
-      if (!region) continue; // skip if no region
-
-      // Make sure regionYearValues[region] exists
-      if (!regionYearValues[region]) {
-        regionYearValues[region] = {};
-      }
-
-      // For each year from 1990 to 2023, see if row has a value
-      for (let year = 1990; year <= 2023; year++) {
+      if (!region) continue;
+      if (!regionYearValues[region]) regionYearValues[region] = {};
+      for (
+        let year = this.globalStartYear;
+        year <= this.globalEndYear;
+        year++
+      ) {
         const strYear = year.toString();
         const val = row[strYear];
         if (val !== undefined && val !== "") {
-          // Convert string to a number
-          let numVal = parseFloat(val);
-          if (!regionYearValues[region][year]) {
+          const numVal = parseFloat(val);
+          if (!regionYearValues[region][year])
             regionYearValues[region][year] = [];
-          }
           regionYearValues[region][year].push(numVal);
         }
       }
     }
 
-    // Step B: For each region + year array, compute average and store
-    // final structure in this.data
+    // Compute average rate for each region and year
     for (let region in regionYearValues) {
       this.data[region] = [];
-      for (let year = 1990; year <= 2023; year++) {
+      for (
+        let year = this.globalStartYear;
+        year <= this.globalEndYear;
+        year++
+      ) {
         const arr = regionYearValues[region][year];
         if (arr && arr.length > 0) {
-          const sum = arr.reduce((acc, val) => acc + val, 0);
-          const avg = sum / arr.length;
-          // push { year, rate } to region’s array
-          this.data[region].push({ year: year, rate: avg });
+          const avg = arr.reduce((acc, val) => acc + val, 0) / arr.length;
+          this.data[region].push({ year, rate: avg });
         }
       }
-      // Sort by year just in case
+      // Ensure data is sorted by year
       this.data[region].sort((a, b) => a.year - b.year);
     }
 
-    // Step C: Overall min/max for all rates
-    // Gather all rates in one array
-    let allRates = [];
+    // Compute overall min and max rates across regions
+    const allRates = [];
     for (let region in this.data) {
-      for (let i = 0; i < this.data[region].length; i++) {
-        allRates.push(this.data[region][i].rate);
+      for (let entry of this.data[region]) {
+        allRates.push(entry.rate);
       }
     }
-    // If allRates is empty, bail out
-    if (!allRates.length) {
-      console.warn("No valid rates found in Firestore data.");
-      return;
-    }
+    this.minRate = Math.min(...allRates);
+    this.maxRate = Math.max(...allRates);
 
-    this.minRate = min(allRates); // p5's min()
-    this.maxRate = max(allRates); // p5's max()
+    // Create sliders using helper
+    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
 
-    // Step D: Year range, defaults
-    this.globalStartYear = 1990;
-    this.globalEndYear = 2023;
-    this.startYear = this.globalStartYear;
-    this.endYear = this.globalEndYear;
-
-    // Step E: Create a slider for selecting start year
-    this.yearSlider = createSlider(
-      this.globalStartYear,
-      this.globalEndYear,
-      this.globalStartYear,
-      1
-    );
-    this.yearSlider.parent("sliders");
-    this.yearSlider.style("width", "300px");
-
-    // Step F: Assign distinct colors to each region
-    let availableColors = [
+    // Assign distinct colors to each region
+    const availableColors = [
       color("#5e81ac"),
       color("#81a1c1"),
       color("#8fbcbb"),
@@ -169,60 +135,47 @@ export function EducationCompletionRate() {
       colorIndex++;
     }
 
-    // Step G: Initialize frameCount for animation
     this.frameCount = 0;
   };
 
-  // --------------
-  // 3) DESTROY: remove slider or other DOM elements if user switches visuals
-  // --------------
+  // DESTROY: remove UI elements
   this.destroy = function () {
-    console.log("Destroying Education Completion Rate visualization...");
-    if (this.yearSlider) {
-      this.yearSlider.remove();
-    }
-    const slidersDiv = document.getElementById("sliders");
-    if (slidersDiv) {
-      slidersDiv.innerHTML = "";
-    }
+    if (this.sliders) removeYearSliders(this.sliders);
   };
 
-  // --------------
-  // 4) DRAW: main loop
-  // --------------
+  // DRAW: render the education completion chart
   this.draw = function () {
-    // Make sure data is loaded and processed
     if (!this.loaded || Object.keys(this.data).length === 0) {
-      console.log("Education data not yet loaded or no data after processing.");
+      console.log("EducationCompletionRate: Data not ready in draw()");
       return;
     }
 
-    // Read slider value (startYear)
-    this.startYear = parseInt(this.yearSlider.value());
-    let numYears = this.endYear - this.startYear;
+    // Ensure valid slider values
+    if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
+      this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
+    }
 
-    // Draw Y axis ticks, axes, labels
+    this.startYear = parseInt(this.sliders.startSlider.value());
+    this.endYear = parseInt(this.sliders.endSlider.value());
+    const numYears = this.endYear - this.startYear;
+
     drawYAxisTickLabels(
       this.minRate,
       this.maxRate,
       this.layout,
       this.mapRateToHeight.bind(this),
-      0 // decimal places
+      0
     );
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw X axis ticks
-    let xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    textStyle(NORMAL);
+    // Draw X tick labels
+    const xTickSkip = ceil(numYears / this.layout.numXTickLabels);
     for (let yr = this.startYear; yr <= this.endYear; yr++) {
       if ((yr - this.startYear) % xTickSkip === 0) {
-        let x = this.mapYearToWidth(yr);
-        // optional grid line
+        const x = this.mapYearToWidth(yr);
         stroke(150);
         line(x, this.layout.topMargin, x, this.layout.bottomMargin);
-
-        // label
         noStroke();
         fill(255);
         text(yr, x, this.layout.bottomMargin + 15);
@@ -231,43 +184,35 @@ export function EducationCompletionRate() {
 
     // Draw lines for each region
     for (let region in this.data) {
-      // Filter region points to only those >= this.startYear
-      let regionData = this.data[region].filter(
+      const regionData = this.data[region].filter(
         (d) => d.year >= this.startYear
       );
-      if (regionData.length < 2) continue; // need at least two points
+      if (regionData.length < 2) continue;
 
-      stroke(this.regionColors[region]);
+      stroke(this.regionColors[region] || color(255, 0, 0));
       strokeWeight(2);
       noFill();
 
       beginShape();
-      let yearCount = 0; // for animation
-
-      for (let i = 0; i < regionData.length; i++) {
-        if (yearCount >= this.frameCount) break; // stop if we haven't "animated" this far
-        let pt = regionData[i];
-        let x = this.mapYearToWidth(pt.year);
-        let y = this.mapRateToHeight(pt.rate);
-        vertex(x, y);
-        yearCount++;
+      let count = 0;
+      for (let pt of regionData) {
+        if (count >= this.frameCount) break;
+        vertex(this.mapYearToWidth(pt.year), this.mapRateToHeight(pt.rate));
+        count++;
       }
       endShape();
     }
 
-    // Increment animation frame
     this.frameCount++;
     if (this.frameCount >= numYears) {
-      this.frameCount = numYears; // or noLoop() if you want to stop
+      this.frameCount = numYears;
     }
   };
 
-  // --------------
-  // 5) HELPER: map year -> x
-  // --------------
-  this.mapYearToWidth = function (value) {
+  // Helper: Map a year value to an x-coordinate
+  this.mapYearToWidth = function (year) {
     return map(
-      value,
+      year,
       this.startYear,
       this.endYear,
       this.layout.leftMargin,
@@ -275,12 +220,10 @@ export function EducationCompletionRate() {
     );
   };
 
-  // --------------
-  // 6) HELPER: map rate -> y
-  // --------------
-  this.mapRateToHeight = function (value) {
+  // Helper: Map a rate value to a y-coordinate
+  this.mapRateToHeight = function (rate) {
     return map(
-      value,
+      rate,
       this.minRate,
       this.maxRate,
       this.layout.bottomMargin,

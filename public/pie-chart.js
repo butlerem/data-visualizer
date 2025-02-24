@@ -1,4 +1,11 @@
-function PieChart(x, y, diameter) {
+import {
+  sum,
+  mean,
+  sliceRowNumbers,
+  stringsToNumbers,
+} from "./helper-functions.js";
+
+export function PieChart(x, y, diameter) {
   this.x = x;
   this.y = y;
   this.diameter = diameter;

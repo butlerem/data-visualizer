@@ -1,15 +1,17 @@
+// gallery.js
+import { PieChart } from "./pie-chart.js";
+
 export function TechDiversityRace() {
   this.name = "Tech Diversity: Race";
   this.id = "tech-diversity-race";
   this.title = "Tech Diversity by Race (inverted docs)";
-
   this.loaded = false;
 
-  // Store the raw "by race" docs here first:
-  this.rawRaceDocs = [];
+  // Storing data in two forms:
+  // this.rawData: array of docs from Firestore
+  // this.data: object grouped by company
 
-  // Then create an array of "by company" objects:
-  // e.g. [{ company: "AirBnB", white: 36.33, black: 5.0, asian: ... }, ...]
+  this.rawRata = [];
   this.data = [];
 
   // A <select> to let user pick which company to visualize
