@@ -10,7 +10,6 @@ body {
 /* Outer Container: Sidebar + Main Content side by side */
 .container {
   display: flex;
-  height: 100vh; /* Fill the entire viewport height */
 }
 
 /* SIDEBAR */
@@ -43,6 +42,7 @@ body {
   list-style-type: none;
   padding: 15px;
   margin: 0;
+  height: 100vh; /* Fill the entire viewport height */
 }
 
 #visuals-menu li {
@@ -94,6 +94,7 @@ body {
   background-color: #3a3e44;
   width: 800px; /* or you can keep a max if desired */
   height: 500px;
+  box-shadow: #2e3136;
 }
 
 /* Slider Section */
@@ -103,7 +104,7 @@ body {
   width: 100%;
   max-width: 800px;
   height: 80px;
-  padding-top: 20px;
+  padding-top: 35px;
   margin-top: 20px;
   text-align: center;
 }
@@ -112,6 +113,13 @@ body {
   color: #84d7d9;
   width: 80%;
   accent-color: #84d7d9;
+}
+
+#company-dropdown {
+  width: 80%;
+  padding: 20px;
+  display: block; /* ensure it’s on its own line */
+  cursor: pointer;
 }
 
 /* STATS PANEL */

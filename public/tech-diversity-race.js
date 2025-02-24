@@ -10,8 +10,10 @@ export function TechDiversityRace() {
   this.rawRaceDocs = [];
   this.data = [];
 
-  // UI elements
-  this.slider = null; // <-- We'll use a slider now
+  // UI element
+  this.dropdown = null;
+
+  // PieChart reference
   this.pie = null;
 
   // ----------------------------------------------------------------------
@@ -21,7 +23,7 @@ export function TechDiversityRace() {
     const self = this;
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app); // Adjust if your Firebase app is named differently
+        const db = getFirestore(window.app);
         return getDocs(collection(db, "tech_diversity_race"));
       })
       .then((querySnapshot) => {
@@ -70,8 +72,8 @@ export function TechDiversityRace() {
   // 3) SETUP: Called by gallery.selectVisual("tech-diversity-race")
   // ----------------------------------------------------------------------
   this.setup = function () {
-    // If we already created our slider, skip re-creating
-    if (this.slider) return;
+    // If we already created our dropdown, skip re-creating
+    if (this.dropdown) return;
 
     // Build an array of company names
     this.companyNames = [];
@@ -79,27 +81,33 @@ export function TechDiversityRace() {
       this.companyNames = this.data.map((d) => d.company).filter(Boolean);
     }
 
-    // Create a new slider that goes from 0 to (companyNames.length - 1)
-    this.slider = createSlider(0, this.companyNames.length - 1, 0, 1);
+    // Create a dropdown (select)
+    this.dropdown = createSelect();
+    // Assign an ID
+    this.dropdown.id("company-dropdown");
+    this.dropdown.parent("sliders"); // Attach to the same parent where the slider was
+    this.dropdown.class("menu-item");
 
-    // Attach it to the existing div#sliders
-    this.slider.parent("sliders");
+    // Populate the dropdown with all companies
+    for (let i = 0; i < this.companyNames.length; i++) {
+      // Pass the index as the value, so we can grab it easily
+      this.dropdown.option(this.companyNames[i], i);
+    }
 
-    // Optional: give it some CSS styles
-    this.slider.style("width", "300px");
-    this.slider.class("menu-item");
+    // Default to the first company
+    this.dropdown.selected("0");
 
     // Create the PieChart
     this.pie = new PieChart(width / 2, height / 2, width * 0.4);
   };
 
   // ----------------------------------------------------------------------
-  // 4) DESTROY: remove the slider if switching visuals
+  // 4) DESTROY: remove the dropdown if switching visuals
   // ----------------------------------------------------------------------
   this.destroy = function () {
-    if (this.slider) {
-      this.slider.remove();
-      this.slider = null;
+    if (this.dropdown) {
+      this.dropdown.remove();
+      this.dropdown = null;
     }
   };
 
@@ -112,18 +120,18 @@ export function TechDiversityRace() {
       return;
     }
 
-    // If we never built the slider, build it now (data is ready).
-    if (!this.slider) {
+    // If we never built the dropdown, build it now (data is ready).
+    if (!this.dropdown) {
       this.setup();
     }
 
-    // If there's still no slider or no PieChart, bail.
-    if (!this.slider || !this.pie) {
+    // If there's still no dropdown or no PieChart, bail.
+    if (!this.dropdown || !this.pie) {
       return;
     }
 
-    // Figure out which company index is selected from the slider
-    const index = this.slider.value();
+    // Get the selected index from the dropdown
+    const index = parseInt(this.dropdown.value(), 10);
 
     // Get the company name from the array of companyNames
     const chosenCompany = this.companyNames[index];
@@ -142,7 +150,7 @@ export function TechDiversityRace() {
     let labels = races.map(
       (r) => r.charAt(0).toUpperCase() + r.slice(1) // Capitalize
     );
-    let colours = ["#5e81ac", "#8fbcbb", "#a3be8c", "#b48ead", "#e9a17c"];
+    let colours = ["#ab52d5", "#84d7d9", "#f4a261", "#2a9d8f", "#4f9df7"];
 
     // Draw the pie
     this.pie.draw(values, labels, colours);

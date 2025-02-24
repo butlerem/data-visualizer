@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { PieChart } from "./pie-chart.js";
+// import { PieChart } from "./pie-chart.js"; // not used in this 3D code
 
 export function TechDiversityRace3D() {
   const self = this;
 
-  self.name = " Tech Race Diversity 3D";
+  self.name = "Tech Race Diversity 3D";
   self.id = "tech-diversity-race-3d";
   self.title = "Tech Diversity by Race (3D)";
 
@@ -18,14 +18,7 @@ export function TechDiversityRace3D() {
   let scene, camera, renderer, controls, raceGroup;
 
   // Colors for slices
-  const raceColors = [
-    0x5e81ac, // Blue
-    0x8fbcbb, // Teal
-    0xa3be8c, // Green
-    0xb48ead, // Purple
-    0xe9a17c, // Orange
-    0xf4a6a0, // Pink
-  ];
+  const raceColors = [0xab52d5, 0x84d7d9, 0x2a9d8f, 0x4f9df7, 0xf4a261];
 
   // ------------------------------------------------
   // 1) PRELOAD: load docs from Firestore
@@ -41,8 +34,6 @@ export function TechDiversityRace3D() {
         self.raceDocs = [];
         querySnapshot.forEach((doc) => {
           console.log("Doc ID:", doc.id, " => ", doc.data());
-          // doc.id might be "white", "black", ...
-          // doc.data() has { AirBnB:"36.33", Amazon:"13.0", ... }
           self.raceDocs.push({ race: doc.id, ...doc.data() });
         });
         console.log("Raw raceDocs array:", self.raceDocs);
@@ -65,6 +56,31 @@ export function TechDiversityRace3D() {
       console.log("TechDiversityRace3D: no data yet in setup.");
       return;
     }
+    // If we already created our dropdown, skip re-creating
+    if (this.dropdown) return;
+
+    // Build an array of company names
+    this.companyNames = [];
+    if (self.dataByCompany && self.dataByCompany.length) {
+      this.companyNames = self.dataByCompany
+        .map((d) => d.company)
+        .filter(Boolean);
+    }
+
+    // Create a dropdown (select)
+    this.dropdown = createSelect();
+    // Assign an ID
+    this.dropdown.id("company-dropdown");
+    // Attach to an existing element with id="sliders", or wherever you want:
+    this.dropdown.parent("sliders");
+    this.dropdown.class("menu-item");
+
+    // Populate the dropdown with all companies
+    for (let i = 0; i < this.companyNames.length; i++) {
+      this.dropdown.option(this.companyNames[i], i);
+    }
+    // Default to the first company
+    this.dropdown.selected("0");
 
     // Hide p5 #canvas
     const p5CanvasDiv = document.getElementById("canvas");
@@ -82,18 +98,35 @@ export function TechDiversityRace3D() {
       console.log("No company found in dataByCompany.");
       return;
     }
-
-    // Build the 3D pie
     createRacePie3D(firstCompanyData);
 
     // Start Three.js loop
     animate();
+
+    // -------------- NEW: Listen for dropdown changes --------------
+    this.dropdown.changed(() => {
+      // 1) Read which company is selected
+      const index = parseInt(this.dropdown.value(), 10);
+      const chosenCompany = this.companyNames[index];
+      let obj = self.dataByCompany.find((d) => d.company === chosenCompany);
+      if (!obj) return;
+
+      // 2) Remove the old 3D pie slices from the scene
+      scene.remove(raceGroup);
+
+      // 3) Build a new pie for the newly selected company
+      createRacePie3D(obj);
+    });
   };
 
   // ------------------------------------------------
   // 3) DESTROY: revert to p5, remove three.js DOM
   // ------------------------------------------------
   this.destroy = function () {
+    if (this.dropdown) {
+      this.dropdown.remove();
+      this.dropdown = null;
+    }
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
@@ -110,10 +143,10 @@ export function TechDiversityRace3D() {
 
   // ------------------------------------------------
   // 4) DRAW: p5 calls this each frame, but we do nothing
-  //    This prevents "draw is not a function" errors in p5
   // ------------------------------------------------
   this.draw = function () {
-    // We do nothing here; Three.js handles animation internally.
+    // We could do the updating logic here, but
+    // we have a changed() listener instead.
   };
 
   // ------------------------------------------------
@@ -150,9 +183,7 @@ export function TechDiversityRace3D() {
     renderer.setSize(getWidth(), getHeight());
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
-      console.log("Appending Three.js canvas to", threeCanvasDiv);
       threeCanvasDiv.appendChild(renderer.domElement);
-      console.log("Renderer DOM Element:", renderer.domElement);
     }
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -173,10 +204,15 @@ export function TechDiversityRace3D() {
   // createRacePie3D(companyObj) - build an extruded arc for each race
   // ------------------------------------------------
   function createRacePie3D(companyObj) {
+    // Remove old group if it exists (already done in the dropdown.changed callback)
+    if (raceGroup) {
+      scene.remove(raceGroup);
+    }
+
     raceGroup = new THREE.Group();
     scene.add(raceGroup);
 
-    // Adjust these categories to match your doc IDs
+    // Adjust these to match your doc fields
     let categories = ["white", "black", "asian", "latino", "other"];
     let values = categories.map((cat) => companyObj[cat] || 0);
     let total = values.reduce((a, b) => a + b, 0);

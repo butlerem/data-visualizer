@@ -83,7 +83,7 @@ export function EducationGenderRadar() {
     // Set chart dimensions.
     this.chartCenterX = width / 2;
     this.chartCenterY = height / 2;
-    this.chartRadius = min(width, height) * 0.35;
+    this.chartRadius = min(width, height) * 0.4;
 
     // Filter data based on the current slider values.
     this.filterData();

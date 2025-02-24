@@ -22,14 +22,14 @@ window.setup = function () {
   gallery = new Gallery();
 
   // Add the visualisation objects here
-  gallery.addVisual(new TechDiversityRace());
-  gallery.addVisual(new TechDiversityRace3D());
   gallery.addVisual(new TechDiversityGender3D());
-  gallery.addVisual(new PayGapByJob2017());
-  gallery.addVisual(new PayGapTimeSeries());
-  gallery.addVisual(new ClimateChange());
-  gallery.addVisual(new EducationCompletionRate());
+  gallery.addVisual(new TechDiversityRace());
   gallery.addVisual(new EducationGenderRadar());
+  gallery.addVisual(new EducationCompletionRate());
+  gallery.addVisual(new TechDiversityRace3D());
+  gallery.addVisual(new PayGapByJob2017());
+  gallery.addVisual(new ClimateChange());
+  gallery.addVisual(new PayGapTimeSeries());
 };
 
 window.draw = function () {
