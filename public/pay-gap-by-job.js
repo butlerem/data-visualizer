@@ -100,7 +100,7 @@ export function PayGapByJob2017() {
   // --- THREE.JS INIT ---
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1c1c1f);
+    scene.background = new THREE.Color("#3A3E44");
 
     camera = new THREE.PerspectiveCamera(55, getAspect(), 0.1, 1000);
     camera.position.set(0, 30, 50);

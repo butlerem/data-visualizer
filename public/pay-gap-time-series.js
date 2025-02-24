@@ -135,9 +135,11 @@ export function PayGapTimeSeries() {
         text(yr, x, this.layout.bottomMargin + 15);
       }
     }
+    stroke(255);
+    strokeWeight(2);
+    noFill();
+    beginShape();
 
-    // Animate drawing of data
-    let previous = null;
     let drawnCount = 0;
     const filteredData = this.data.filter(
       (d) => d.year >= startYear && d.year <= endYear
@@ -147,20 +149,16 @@ export function PayGapTimeSeries() {
     for (let i = 0; i < filteredData.length; i++) {
       const d = filteredData[i];
       if (drawnCount >= this.frameCount) break;
-      if (!previous) {
-        previous = d;
-        drawnCount++;
-        continue;
-      }
-      line(
-        this.mapYearToWidth(previous.year, startYear, endYear),
-        this.mapPayGapToHeight(previous.pay_gap),
+
+      vertex(
         this.mapYearToWidth(d.year, startYear, endYear),
         this.mapPayGapToHeight(d.pay_gap)
       );
-      previous = d;
+
       drawnCount++;
     }
+
+    endShape();
 
     this.frameCount++;
     if (this.frameCount > maxFrames) {

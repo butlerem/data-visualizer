@@ -200,8 +200,9 @@ export function ClimateChange() {
 
   // Helper: Map temperature to a color
   this.mapTemperatureToColour = function (temp) {
-    const red = map(temp, this.minTemperature, this.maxTemperature, 255, 180);
-    const blue = map(temp, this.minTemperature, this.maxTemperature, 180, 255);
-    return color(red, 160, blue, 80);
+    const red = map(temp, this.minTemperature, this.maxTemperature, 231, 79); // Coral Red (#e76f51 → RGB(231, 111, 81))
+    const green = map(temp, this.minTemperature, this.maxTemperature, 111, 157); // Interpolating green values
+    const blue = map(temp, this.minTemperature, this.maxTemperature, 81, 247); // Light Blue (#4f9df7 → RGB(79, 157, 247))
+    return color(red, green, blue, 80);
   };
 }

@@ -5,7 +5,7 @@ import { PieChart } from "./pie-chart.js";
 export function TechDiversityRace3D() {
   const self = this;
 
-  self.name = "Tech Diversity: Race 3D";
+  self.name = " Tech Race Diversity 3D";
   self.id = "tech-diversity-race-3d";
   self.title = "Tech Diversity by Race (3D)";
 
@@ -140,7 +140,7 @@ export function TechDiversityRace3D() {
   // ------------------------------------------------
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1c1c1f);
+    scene.background = new THREE.Color("#3A3E44");
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-10, 10, 0);
@@ -150,7 +150,9 @@ export function TechDiversityRace3D() {
     renderer.setSize(getWidth(), getHeight());
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
+      console.log("Appending Three.js canvas to", threeCanvasDiv);
       threeCanvasDiv.appendChild(renderer.domElement);
+      console.log("Renderer DOM Element:", renderer.domElement);
     }
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);

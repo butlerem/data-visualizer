@@ -15,7 +15,7 @@ let canvasContainer;
 window.setup = function () {
   // p5 setup
   canvasContainer = select("#canvas");
-  var c = createCanvas(1000, 550);
+  var c = createCanvas(800, 500);
   c.parent("canvas"); // Attach the canvas to the HTML element with id='canvas'
 
   // Create a new gallery object
@@ -33,7 +33,7 @@ window.setup = function () {
 };
 
 window.draw = function () {
-  background("#1c1c20");
+  background("#3a3e44");
 
   if (gallery.selectedVisual != null) {
     gallery.selectedVisual.draw();

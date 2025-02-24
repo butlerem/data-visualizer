@@ -18,21 +18,55 @@ export function Gallery() {
 
     this.visuals.push(vis); // Add the visual to the visuals array
 
-    // Create menu item.
-    var menuItem = createElement("li", vis.name); // Create a list item with the visual's name
-    menuItem.addClass("menu-item"); // Add the 'menu-item' class to the list item
-    menuItem.id(vis.id); // Set the id of the list item to the visual's id
+    // Create menu item without text
+    var menuItem = createElement("li");
 
+    // Create Material Icon span
+    var iconSpan = createElement("span");
+    iconSpan.addClass("material-icons");
+
+    // Define icons for each visualization name
+    var iconMapping = {
+      "Tech Race Diversity": "groups",
+      "Tech Race Diversity 3D": "diversity_3",
+      "Tech Gender Diversity 3D": "female",
+      "Pay Gap By Job": "work",
+      "Pay Gap Over Time": "timeline",
+      "Climate Change": "eco",
+      "Education Completion": "school",
+      "Education Gender Radar": "radar",
+    };
+
+    // Assign the correct icon based on visualization name
+    if (iconMapping[vis.name]) {
+      iconSpan.html(iconMapping[vis.name]);
+    } else {
+      iconSpan.html("insights"); // Default icon
+    }
+
+    // Create span for the name (to prevent duplication)
+    var nameSpan = createElement("span", vis.name);
+
+    // Append elements in the correct order
+    menuItem.child(iconSpan); // First, add the icon
+    menuItem.child(nameSpan); // Then, add the name
+
+    // Add required classes and ID
+    menuItem.addClass("menu-item");
+    menuItem.id(vis.id);
+
+    // -- Use e.currentTarget.id so that hover always references the <li> --
     menuItem.mouseOver(function (e) {
-      var el = select("#" + e.srcElement.id);
-      el.addClass("hover"); // Add the 'hover' class when the mouse is over the item
+      var el = select("#" + e.currentTarget.id);
+      el.addClass("hover");
     });
 
     menuItem.mouseOut(function (e) {
-      var el = select("#" + e.srcElement.id);
-      el.removeClass("hover"); // Remove the 'hover' class when the mouse is out of the item
+      var el = select("#" + e.currentTarget.id);
+      el.removeClass("hover");
     });
 
+    // -- Also use e.currentTarget.id in the click handler --
     menuItem.mouseClicked(function (e) {
       // Remove selected class from any other menu-items
       var menuItems = selectAll(".menu-item");
@@ -40,11 +74,11 @@ export function Gallery() {
         menuItems[i].removeClass("selected");
       }
 
-      var el = select("#" + e.srcElement.id);
+      var el = select("#" + e.currentTarget.id);
       el.addClass("selected"); // Add the 'selected' class to the clicked item
 
       // Select the visual and its related visual
-      self.selectVisual(e.srcElement.id);
+      self.selectVisual(e.currentTarget.id);
     });
 
     var visMenu = select("#visuals-menu");
@@ -100,7 +134,6 @@ export function Gallery() {
     }
 
     // --- Universal UI update for the selected visual ---
-    // Using p5's select function (if you prefer to use vanilla DOM, use document.getElementById)
     var titleEl = select("#visual-title");
     if (titleEl && this.selectedVisual) {
       titleEl.html(this.selectedVisual.title);

@@ -17,21 +17,53 @@
     </script>
     <script src="lib/p5.min.js"></script>
     <script src="lib/p5.dom.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="app" class="container">
-      <div id="menu">
-        <ul id="visuals-menu">
-          <h3>Data Visualisation Dashboard</h3>
-        </ul>
+      <!-- Sidebar -->
+      <div id="sidebar">
+        <div id="menu-title">
+          <h2>Visuals Menu</h2>
+        </div>
+        <ul id="visuals-menu"></ul>
       </div>
+
+      <!-- Main Content -->
       <div id="main">
-        <h3 id="visual-title"></h3>
-        <div id="canvas"></div>
-        <div id="sliders"></div>
-        <!-- three.js will attach its WebGL canvas here -->
-        <div id="three-canvas"></div>
+        <!-- Wrapper to keep Canvas and Stats together -->
+        <div class="canvas-wrapper">
+          <h2 id="visual-title"></h2>
+          <div id="canvas"></div>
+          <div id="three-canvas"></div>
+
+          <!-- Slider Section Below Canvas -->
+          <div id="sliders"></div>
+        </div>
+
+        <!-- Stats Panel (Attached to Canvas) -->
+        <div id="stats-panel">
+          <div class="stat">
+            <h2><i class="material-icons">diversity_1</i> 95%</h2>
+            <p>Stat 1</p>
+          </div>
+          <div class="stat">
+            <h2><i class="material-icons">diversity_1</i> 88%</h2>
+            <p>Stat 2</p>
+          </div>
+          <div class="stat">
+            <h2><i class="material-icons">diversity_1</i> 1,020</h2>
+            <p>Stat 3</p>
+          </div>
+          <button id="download">
+            <i class="material-icons">download</i>
+            <p>Download Visual</p>
+          </button>
+        </div>
       </div>
     </div>
 

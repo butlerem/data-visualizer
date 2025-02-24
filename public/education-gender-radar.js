@@ -65,7 +65,7 @@ export function EducationGenderRadar() {
           this.endSlider.value()
       );
       this.yearLabel.parent("sliders");
-      this.yearLabel.style("color", "#fff");
+      this.yearLabel.style("color", "  color: #a0aec0;");
     }
     // When slider values change, update label and re-filter data.
     const updateLabelAndFilter = () => {
@@ -186,9 +186,9 @@ export function EducationGenderRadar() {
       ellipse(this.chartCenterX, this.chartCenterY, rad * 2, rad * 2);
     }
 
-    // Draw the male data polygon (blue).
-    fill(0, 0, 255, 100);
-    stroke(0, 0, 255);
+    // Draw the male data polygon (cyan).
+    fill(132, 215, 217, 100); // Equivalent to #84d7d9 with 100 alpha
+    stroke(132, 215, 217);
     beginShape();
     for (let i = 0; i < n; i++) {
       let val = this.maleValues[i];
@@ -200,9 +200,9 @@ export function EducationGenderRadar() {
     }
     endShape(CLOSE);
 
-    // Draw the female data polygon (red).
-    fill(255, 0, 0, 100);
-    stroke(255, 0, 0);
+    // Draw the female data polygon (purple).
+    fill(171, 82, 213, 100); // Equivalent to #ab52d5 with 100 alpha
+    stroke(171, 82, 213);
     beginShape();
     for (let i = 0; i < n; i++) {
       let val = this.femaleValues[i];

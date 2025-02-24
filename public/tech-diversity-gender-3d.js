@@ -5,9 +5,9 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 export function TechDiversityGender3D() {
   const self = this;
-  self.name = "Tech Diversity: Gender (3D)";
+  self.name = "Tech Gender Diversity 3D";
   self.id = "tech-diversity-gender-3d";
-  self.title = "Tech Diversity by Gender Percentage (3D)";
+  self.title = "Tech Diversity by Gender Percentage";
   self.loaded = false;
   self.data = [];
 
@@ -21,8 +21,8 @@ export function TechDiversityGender3D() {
   const gapBetweenCompanies = 1.3;
   const scaleFactor = 0.1;
 
-  const femaleColor = 0xf2b5a0;
-  const maleColor = 0x8fbcbb;
+  const femaleColor = 0xab52d5;
+  const maleColor = 0x84d7d9;
 
   // Preload: load Firestore docs
   this.preload = function () {
@@ -100,7 +100,7 @@ export function TechDiversityGender3D() {
   // --- THREE.JS INIT ---
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1c1c1f);
+    scene.background = new THREE.Color("#3A3E44");
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     camera.position.set(-25, 10, 0);

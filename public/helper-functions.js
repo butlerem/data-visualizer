@@ -45,7 +45,6 @@ export const createYearSliders = (
 
   const yearLabel = createP(`Start Year: ${minYear} | End Year: ${maxYear}`);
   yearLabel.parent(parentId);
-  yearLabel.style("color", "#fff");
 
   const updateLabel = () => {
     yearLabel.html(

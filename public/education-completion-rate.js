@@ -22,7 +22,7 @@ export function EducationCompletionRate() {
 
   // Global year range
   this.globalStartYear = 1990;
-  this.globalEndYear = 2023;
+  this.globalEndYear = 2022;
 
   // p5 layout settings
   const marginSize = 35;
@@ -121,12 +121,12 @@ export function EducationCompletionRate() {
 
     // Assign distinct colors to each region
     const availableColors = [
-      color("#5e81ac"),
-      color("#81a1c1"),
-      color("#8fbcbb"),
-      color("#a3be8c"),
-      color("#b48ead"),
-      color("#d08770"),
+      color("#ab52d5"), // Vibrant Purple
+      color("#84d7d9"), // Soft Cyan
+      color("#f4a261"), // Warm Orange
+      color("#2a9d8f"), // Deep Teal
+      color("#e76f51"), // Coral Red
+      color("#4f9df7"), // Light Blue
     ];
     let colorIndex = 0;
     for (let region in this.data) {
