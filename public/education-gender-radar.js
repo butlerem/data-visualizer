@@ -1,9 +1,16 @@
 export function EducationGenderRadar() {
+  const self = this;
   this.name = "Education Gender Radar";
   this.id = "education-gender-radar";
   this.title = "Education Gender Distribution";
   this.loaded = false;
   this.data = [];
+
+  this.stats = [
+    { icon: "school", value: "60%", label: "Female Participation" },
+    { icon: "school", value: "40%", label: "Male Participation" },
+    { icon: "pie_chart", value: "100%", label: "Total Enrollment" },
+  ];
 
   // Hold aggregated values.
   this.categories = [];

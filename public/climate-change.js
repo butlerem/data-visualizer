@@ -8,6 +8,7 @@ import {
 } from "./helper-functions.js";
 
 export function ClimateChange() {
+  const self = this;
   this.name = "Climate Change";
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
@@ -15,6 +16,12 @@ export function ClimateChange() {
   this.xAxisLabel = "Year";
   this.yAxisLabel = "Change in ℃";
   this.data = [];
+
+  this.stats = [
+    { icon: "eco", value: "0.5℃", label: "Avg Increase" },
+    { icon: "trending_up", value: "2.0℃", label: "Max Increase" },
+    { icon: "trending_down", value: "-1.0℃", label: "Min Increase" },
+  ];
 
   // Global settings for data range
   this.minYear = null;
@@ -87,6 +94,7 @@ export function ClimateChange() {
     // Create sliders using helper
     this.sliders = createYearSliders(this.minYear, this.maxYear);
 
+    // Reset animation frame count whenever setup is called
     this.frameCount = 0;
   };
 
@@ -133,44 +141,47 @@ export function ClimateChange() {
     );
 
     // Draw data segments and lines
-    const segmentWidth = this.layout.plotWidth() / numYears;
+    const segmentWidth =
+      this.layout.plotWidth() / (this.endYear - this.startYear);
     let previous = null;
-    let drawnCount = 0;
+    let segmentsDrawn = 0;
 
     for (let i = 0; i < this.data.length; i++) {
       const current = {
         year: Number(this.data[i].year),
         temperature: Number(this.data[i].temperature),
       };
+
       if (
         previous &&
         current.year > this.startYear &&
         current.year <= this.endYear
       ) {
-        // Draw background rectangle for temperature color
-        noStroke();
-        fill(this.mapTemperatureToColour(current.temperature));
-        rect(
-          this.mapYearToWidth(previous.year),
-          this.layout.topMargin,
-          segmentWidth,
-          this.layout.plotHeight()
-        );
-        // Draw connecting line
-        stroke(200);
-        line(
-          this.mapYearToWidth(previous.year),
-          this.mapTemperatureToHeight(previous.temperature),
-          this.mapYearToWidth(current.year),
-          this.mapTemperatureToHeight(current.temperature)
-        );
+        if (segmentsDrawn < this.frameCount) {
+          // Draw background rectangle for temperature color
+          noStroke();
+          fill(this.mapTemperatureToColour(current.temperature));
+          rect(
+            this.mapYearToWidth(previous.year),
+            this.layout.topMargin,
+            segmentWidth,
+            this.layout.plotHeight()
+          );
+          // Draw connecting line
+          stroke(200);
+          line(
+            this.mapYearToWidth(previous.year),
+            this.mapTemperatureToHeight(previous.temperature),
+            this.mapYearToWidth(current.year),
+            this.mapTemperatureToHeight(current.temperature)
+          );
+          segmentsDrawn++;
+        }
       }
       previous = current;
-      drawnCount++;
-      if (drawnCount >= this.frameCount) break;
     }
 
-    this.frameCount++;
+    this.frameCount += 2;
     if (this.frameCount >= numYears) {
       this.frameCount = numYears;
     }

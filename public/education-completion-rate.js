@@ -8,6 +8,7 @@ import {
 } from "./helper-functions.js";
 
 export function EducationCompletionRate() {
+  const self = this;
   this.name = "Education Completion";
   this.id = "education-completion-rate";
   this.title = "Female Primary Education Completion Rate Over Time (by Region)";
@@ -19,6 +20,12 @@ export function EducationCompletionRate() {
   this.rawData = [];
   this.data = {}; // e.g. { "Africa": [{ year, rate }, ...], ... }
   this.regionColors = {};
+
+  this.stats = [
+    { icon: "trending_up", value: "90%", label: "Completion Rate" },
+    { icon: "pie_chart", value: "50%", label: "Female Share" },
+    { icon: "pie_chart", value: "50%", label: "Male Share" },
+  ];
 
   // Global year range
   this.globalStartYear = 1990;

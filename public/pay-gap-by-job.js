@@ -11,6 +11,12 @@ export function PayGapByJob2017() {
   self.loaded = false;
   self.data = [];
 
+  self.stats = [
+    { icon: "trending_down", value: "15%", label: "Average Gap" },
+    { icon: "work", value: "$120K", label: "Median Salary" },
+    { icon: "insights", value: "75%", label: "Data Coverage" },
+  ];
+
   // Three.js variables
   let scene, camera, renderer, controls, bubblesGroup;
 

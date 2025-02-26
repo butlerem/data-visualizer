@@ -8,6 +8,7 @@ import {
 } from "./helper-functions.js";
 
 export function PayGapTimeSeries() {
+  const self = this;
   this.name = "Pay Gap Over Time";
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
@@ -15,6 +16,12 @@ export function PayGapTimeSeries() {
   this.xAxisLabel = "Year";
   this.yAxisLabel = "%";
   this.data = [];
+
+  this.stats = [
+    { icon: "timeline", value: "10%", label: "Min Gap" },
+    { icon: "timeline", value: "20%", label: "Max Gap" },
+    { icon: "timeline", value: "15%", label: "Average Gap" },
+  ];
 
   // Global settings for the data range (will be updated on setup)
   this.globalStartYear = 1997;

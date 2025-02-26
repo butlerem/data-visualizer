@@ -1,7 +1,6 @@
 import { Gallery } from "./gallery.js";
 import { TechDiversityRace } from "./tech-diversity-race.js";
-import { TechDiversityGender3D } from "./tech-diversity-gender-3d.js";
-import { TechDiversityRace3D } from "./tech-diversity-race-3d.js";
+import { TechDiversityGender } from "./tech-diversity-gender.js";
 import { PayGapByJob2017 } from "./pay-gap-by-job.js";
 import { PayGapTimeSeries } from "./pay-gap-time-series.js";
 import { ClimateChange } from "./climate-change.js";
@@ -22,11 +21,10 @@ window.setup = function () {
   gallery = new Gallery();
 
   // Add the visualisation objects here
-  gallery.addVisual(new TechDiversityGender3D());
-  gallery.addVisual(new TechDiversityRace());
+  gallery.addVisual(new TechDiversityGender());
   gallery.addVisual(new EducationGenderRadar());
   gallery.addVisual(new EducationCompletionRate());
-  gallery.addVisual(new TechDiversityRace3D());
+  gallery.addVisual(new TechDiversityRace());
   gallery.addVisual(new PayGapByJob2017());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new PayGapTimeSeries());
