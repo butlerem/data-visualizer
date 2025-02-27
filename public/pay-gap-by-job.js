@@ -13,7 +13,7 @@ export function PayGapByJob2017() {
   self.loaded = false;
   self.data = [];
 
-  // Statistics for stats panel
+  // Stats for stats panel
   self.stats = [
     { icon: "trending_down", value: "15%", label: "Average Gap" },
     { icon: "work", value: "$120K", label: "Median Salary" },
@@ -23,6 +23,7 @@ export function PayGapByJob2017() {
   // Three.js variables
   let scene, camera, renderer, controls, bubblesGroup;
 
+  // Color mapping for job types
   const jobTypeColors = {
     "Process, plant and machine operatives": 0x5e81ac,
     "Skilled trades occupations": 0x81a1c1,
@@ -35,13 +36,11 @@ export function PayGapByJob2017() {
     "Caring, leisure and other service occupations": 0xf4a6a0,
   };
 
-  /**
-   * Preload: Fetch occupation pay gap data.
-   */
+  // Preload data asynchronously
   this.preload = async function () {
     try {
-      this.data = await fetchData("occupation_pay_gap");
-      this.loaded = true;
+      self.data = await fetchData("occupation_pay_gap");
+      self.loaded = true;
       console.log("Occupation Data loaded");
     } catch (error) {
       console.error("Error loading Occupation data:", error);
@@ -49,10 +48,7 @@ export function PayGapByJob2017() {
   };
 
   /**
-   * Setup:
-   * - Hide the p5 canvas.
-   * - Show the Three.js container.
-   * - Initialize the Three.js scene.
+   * Setup the visualization: hides the p5 canvas, shows the Three.js canvas, creates bubbles, axis labels
    */
   this.setup = function () {
     if (!self.loaded || !self.data.length) {
@@ -60,30 +56,25 @@ export function PayGapByJob2017() {
       return;
     }
 
-    // Hide p5 canvas and show Three.js container using helpers.
     hideElement("canvas");
     showElement("three-canvas");
 
-    // Clear Three.js container.
+    // Clear Three.js container
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.innerHTML = "";
     }
 
-    // Initialize Three.js scene.
     initThree();
     createBubbles();
-    createAxisLabels();
+    createAxisLabels(); // Axis tick marks will be added
     animate();
   };
 
-  /**
-   * Draw: Empty because Three.js handles rendering via its animation loop.
-   */
-  this.draw = function () {
-    // Three.js rendering handled in animate().
-  };
+  // Draw is handled by the Three.js animation loop
+  this.draw = function () {};
 
+  // Cleanup when destroyed
   this.destroy = function () {
     hideElement("three-canvas");
     showElement("canvas");
@@ -92,8 +83,9 @@ export function PayGapByJob2017() {
     }
   };
 
-  // --- THREE.JS SETUP FUNCTIONS ---
-
+  /**
+   * Initialize the Three.js scene, camera, renderer, lights, grid, controls
+   */
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#3A3E44");
@@ -104,29 +96,27 @@ export function PayGapByJob2017() {
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
-
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Lights
+    // Add lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
-
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    // Grid Helper
+    // Grid for reference
     const gridHelper = new THREE.GridHelper(40, 20);
     scene.add(gridHelper);
 
-    // Group to hold bubbles
+    // Group to hold the bubble meshes
     bubblesGroup = new THREE.Group();
     scene.add(bubblesGroup);
 
-    // OrbitControls
+    // Orbit controls for interactivity
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
@@ -134,8 +124,11 @@ export function PayGapByJob2017() {
     window.addEventListener("resize", onWindowResize);
   }
 
+  /**
+   * Create bubble meshes based on loaded data
+   */
   function createBubbles() {
-    const scaleFactor = 0.05; // For bubble size
+    const scaleFactor = 0.05; // Scale factor for bubble size
 
     self.data.forEach((doc) => {
       const propFemale = parseFloat(doc.proportion_female) || 0;
@@ -143,8 +136,8 @@ export function PayGapByJob2017() {
       const numJobs = parseFloat(doc.num_jobs) || 0;
       const jobType = doc.job_type || "Unknown";
 
-      // Convert these to 3D coordinates.
-      const x = (propFemale - 50) / 2; // center around 50%
+      // Convert data to 3D coordinates
+      const x = (propFemale - 50) / 2; // Center at 50%
       const y = payGap;
       const z = (numJobs - 1000) / 100;
       const size = Math.sqrt(numJobs) * scaleFactor;
@@ -162,6 +155,10 @@ export function PayGapByJob2017() {
     });
   }
 
+  /**
+   * Create axis labels and tick marks
+   * TODO: Add tick labels and legend
+   */
   function createAxisLabels() {
     const loader = new FontLoader();
     loader.load(
@@ -198,16 +195,34 @@ export function PayGapByJob2017() {
           scene.add(label);
         });
 
-        // Optionally add tick marks.
+        // TODO: Add tick marks for each axis
         addTickMarks(font);
+
+        // TODO: Add legend to explain visual cues
+        addLegend(font);
       }
     );
   }
 
+  /**
+   * Placeholder for adding tick marks
+   * TODO: Implement tick mark creation
+   */
   function addTickMarks(font) {
-    // Tick marks implementation can be added here if desired.
+    // TODO: Add tick marks for each axis using the provided font
   }
 
+  /**
+   * Placeholder for adding a legend.
+   * TODO: Implement legend to explain color coding etc
+   */
+  function addLegend(font) {
+    // TODO: Create and position a legend on the scene
+  }
+
+  /**
+   * Animation loop: updates controls and renders scene
+   */
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -216,12 +231,16 @@ export function PayGapByJob2017() {
     }
   }
 
+  /**
+   * Adjust camera/render on window resize
+   */
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(getWidth(), getHeight());
   }
 
+  // Utility functions for responsiveness
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;

@@ -264,6 +264,7 @@ export function getThreeCanvasDimensions() {
 /**
  * Fetches data from Firestore.
  */
+// updated to include the document ID
 export const fetchData = async (collectionName) => {
   try {
     const { getFirestore, collection, getDocs } = await import(
@@ -271,7 +272,8 @@ export const fetchData = async (collectionName) => {
     );
     const db = getFirestore(window.app);
     const querySnapshot = await getDocs(collection(db, collectionName));
-    return querySnapshot.docs.map((doc) => doc.data());
+    // Return each doc's id as "race" along with its data
+    return querySnapshot.docs.map((doc) => ({ race: doc.id, ...doc.data() }));
   } catch (error) {
     console.error(`Error loading data from ${collectionName}:`, error);
     throw error;

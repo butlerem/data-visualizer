@@ -23,7 +23,7 @@ export function TechDiversityGender() {
   // Three.js variables
   let scene, camera, renderer, controls, barsGroup;
 
-  // Chart config
+  // Chart configuration
   const barWidth = 0.5;
   const barDepth = 0.6;
   const gapBetweenBars = 0.1;
@@ -33,7 +33,7 @@ export function TechDiversityGender() {
   const femaleColor = 0xab52d5;
   const maleColor = 0x84d7d9;
 
-  // Preload: load Firestore docs
+  // Preload data from Firestore
   this.preload = function () {
     import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
       .then(({ getFirestore, collection, getDocs }) => {
@@ -51,43 +51,39 @@ export function TechDiversityGender() {
       });
   };
 
-  // Setup: hide p5 canvas, show three.js container, init scene
+  // Setup: hide p5 canvas, show Three.js canvas
   this.setup = function () {
-    // If data not loaded or empty, skip
+    // If data not loaded, skip
     if (!self.loaded || !self.data.length) {
-      console.log("TechDiversityGender3D: no data loaded yet.");
+      console.log("TechDiversityGender3D: no data loaded yet");
       return;
     }
 
-    // Hide p5 #canvas
+    // Hide p5 canvas
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "none";
     }
 
-    // Show #three-canvas
+    // Show Three.js canvas
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "block";
     }
 
-    // Init Three.js
-    // Build bars & labels
-    // Start the render loop
+    // Initialize Three.js and build chart
     initThree();
     createBars();
-    createAxisLabels();
+    createAxisLabels(); // Axis labels and company labels will be added
     animate();
   };
 
-  // Draw: p5 calls this, but we do nothing in Three.js
-  this.draw = function () {
-    // Empty. We rely on Three.js's animate() with requestAnimationFrame.
-  };
+  // Draw is called by p5 but Three.js handles its own loop
+  this.draw = function () {};
 
-  // 4) DESTROY: revert to p5, remove Three.js DOM
+  // Destroy: revert to p5 and remove Three.js DOM elements
   this.destroy = function () {
-    // Hide Three.js
+    // Hide Three.js container
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
@@ -97,13 +93,13 @@ export function TechDiversityGender() {
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "block";
     }
-    // Remove Three.js canvas
+    // Remove Three.js canvas from DOM
     if (renderer && renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
 
-  // --- THREE.JS INIT ---
+  // Initialize Three.js scene, camera, render, lights, grid, controls
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#3A3E44");
@@ -120,17 +116,18 @@ export function TechDiversityGender() {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Lights
+    // Add ambient light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
+    // Add directional light
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    // Compute grid size from this.data length
+    // Compute grid size from data length
     let numCompanies = self.data.length;
-    let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // a bit of padding
+    let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // Add some padding
 
     // Add a grid helper
     const gridHelper = new THREE.GridHelper(gridSize, numCompanies);
@@ -140,7 +137,7 @@ export function TechDiversityGender() {
     barsGroup = new THREE.Group();
     scene.add(barsGroup);
 
-    // OrbitControls
+    // Set up orbit controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
@@ -148,46 +145,46 @@ export function TechDiversityGender() {
     window.addEventListener("resize", onWindowResize);
   }
 
-  // Create Bars
+  // Create bars for each company data
   function createBars() {
     let numCompanies = self.data.length;
-    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // center them
+    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // Center the bars
 
     for (let i = 0; i < numCompanies; i++) {
       const doc = self.data[i];
-
-      // Convert from strings to numbers (if needed)
+      // Convert values to numbers
       let femaleVal = parseFloat(doc.female) || 0;
       let maleVal = parseFloat(doc.male) || 0;
 
-      // A group for each company's bars
+      // Create a group for the company's bars
       const companyGroup = new THREE.Group();
 
-      // -- Female Bar --
+      // Female bar
       let femaleHeight = femaleVal * scaleFactor;
       let femaleGeom = new THREE.BoxGeometry(barWidth, femaleHeight, barDepth);
       let femaleMat = new THREE.MeshStandardMaterial({ color: femaleColor });
       let femaleBar = new THREE.Mesh(femaleGeom, femaleMat);
-      femaleBar.position.y = femaleHeight / 2; // center it
+      femaleBar.position.y = femaleHeight / 2; // Center vertically
       femaleBar.position.x = -(barWidth / 2 + gapBetweenBars / 2);
       companyGroup.add(femaleBar);
 
-      // -- Male Bar --
+      // Male bar
       let maleHeight = maleVal * scaleFactor;
       let maleGeom = new THREE.BoxGeometry(barWidth, maleHeight, barDepth);
       let maleMat = new THREE.MeshStandardMaterial({ color: maleColor });
       let maleBar = new THREE.Mesh(maleGeom, maleMat);
-      maleBar.position.y = maleHeight / 2;
+      maleBar.position.y = maleHeight / 2; // Center vertically
       maleBar.position.x = barWidth / 2 + gapBetweenBars / 2;
       companyGroup.add(maleBar);
 
-      // Position this company's group along Z
+      // Position the company group along the Z-axis
       companyGroup.position.z = -i * gapBetweenCompanies + offsetZ;
 
       barsGroup.add(companyGroup);
     }
   }
-  // Create Axis Labels
+
+  // Create axis labels and company labels
   function createAxisLabels() {
     const loader = new FontLoader();
     loader.load(
@@ -219,23 +216,25 @@ export function TechDiversityGender() {
 
         addCompanyLabels(font);
         addYAxisTicks(font);
+        // TODO add legend for color coding and other cues
       }
     );
   }
 
+  // Add Y-axis tick marks and labels
   function addYAxisTicks(font) {
     const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
     const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     const maxPercentage = 100;
-    const numTicks = 5; // e.g., 0%, 20%, 40%, 60%, 80%, 100%
+    const numTicks = 5; // e.g. 0%, 20%, 40%, 60%, 80%, 100%
     const tickSpacing = (maxPercentage * scaleFactor) / numTicks;
 
     for (let i = 0; i <= numTicks; i++) {
       let yValue = i * (maxPercentage / numTicks); // e.g. 0, 20, 40, 60, 80, 100
       let yPos = i * tickSpacing;
 
-      // A small line segment for the tick mark
+      // Create a small line segment as a tick mark
       const tickGeometry = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, yPos, -20),
         new THREE.Vector3(-0.5, yPos, -20),
@@ -243,7 +242,7 @@ export function TechDiversityGender() {
       const tick = new THREE.Line(tickGeometry, tickMaterial);
       scene.add(tick);
 
-      // The tick label (text)
+      // Create tick label text
       const tickLabelGeo = new TextGeometry(yValue.toFixed(0), {
         font: font,
         size: 0.5,
@@ -256,33 +255,28 @@ export function TechDiversityGender() {
     }
   }
 
-  // X-Axis: Display each company's name near its bars
+  // Add company labels near the bars
   function addCompanyLabels(font) {
     const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
     let numCompanies = self.data.length;
     let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2;
 
     for (let i = 0; i < numCompanies; i++) {
       let companyName = self.data[i].company || "Unknown";
-
       const labelGeometry = new TextGeometry(companyName, {
         font: font,
         size: 0.5,
         height: 0.05,
       });
       const label = new THREE.Mesh(labelGeometry, textMaterial);
-
-      // Position the label near the bars
+      // Position the label near the company's bars
       label.position.set(0, -1, -i * gapBetweenCompanies + offsetZ);
       label.rotation.set(0, (3 * Math.PI) / 2, -Math.PI / 2);
-
       scene.add(label);
     }
   }
 
-  // animate: main Three.js loop
-
+  // Animation loop to update controls and render the scene
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -291,23 +285,26 @@ export function TechDiversityGender() {
     }
   }
 
-  // onWindowResize
-
+  // Adjust camera and renderer on window resize
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(getWidth(), getHeight());
   }
 
-  // Helper: #three-canvas dims
+  // Helper function to get container width
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;
   }
+
+  // Helper function to get container height
   function getHeight() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientHeight : window.innerHeight;
   }
+
+  // Helper function to compute aspect ratio
   function getAspect() {
     return getWidth() / getHeight();
   }

@@ -11,7 +11,7 @@ export function TechDiversityRace() {
   self.id = "tech-diversity-race";
   self.title = "Tech Diversity by Race";
 
-  // We'll store Firestore docs in "raceDocs" and the inverted data in "dataByCompany"
+  // Firestore docs stored in raceDocs, inverted data in dataByCompany
   self.raceDocs = [];
   self.dataByCompany = [];
   self.loaded = false;
@@ -25,44 +25,34 @@ export function TechDiversityRace() {
   // Three.js variables
   let scene, camera, renderer, controls, raceGroup, legend3DGroup;
 
-  // Colors for slices (as hex numbers)
+  // Colors for slices (hex values)
   const raceColors = [0xab52d5, 0x84d7d9, 0x2a9d8f, 0x4f9df7, 0xf4a261];
 
-  // ------------------------------------------------
-  // 1) PRELOAD: load docs from Firestore
-  // ------------------------------------------------
-  this.preload = function () {
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "tech_diversity_race"));
-      })
-      .then((querySnapshot) => {
-        self.raceDocs = [];
-        querySnapshot.forEach((doc) => {
-          self.raceDocs.push({ race: doc.id, ...doc.data() });
-        });
-        self.dataByCompany = invertData(self.raceDocs);
-        self.loaded = true;
-        console.log("Tech Diversity Race data loaded");
-      })
-      .catch((error) => {
-        console.error("Error loading TechDiversityRace3D data:", error);
-      });
+  // Preload data asynchronously
+  this.preload = async function () {
+    try {
+      const data = await fetchData("tech_diversity_race");
+      self.raceDocs = data;
+      self.dataByCompany = invertData(self.raceDocs);
+      self.loaded = true;
+      console.log("Tech Diversity Race data loaded");
+    } catch (error) {
+      console.error("Error loading TechDiversityRace3D data:", error);
+    }
   };
 
-  // ------------------------------------------------
-  // 2) SETUP: hide p5 canvas, show #three-canvas, etc.
-  // ------------------------------------------------
+  /**
+   * Setup the visualization: hides the p5 canvas, shows the Three.js canvas
+   */
   this.setup = function () {
     if (!self.loaded || !self.dataByCompany.length) {
-      console.log("TechDiversityRace3D: no data yet in setup.");
+      console.log("TechDiversityRace3D: no data yet in setup");
       return;
     }
-    // If we already created our dropdown, skip re-creating
+    // If dropdown already exists, skip re-creating
     if (this.dropdown) return;
 
-    // Build an array of company names
+    // Build array of company names
     this.companyNames = [];
     if (self.dataByCompany && self.dataByCompany.length) {
       this.companyNames = self.dataByCompany
@@ -74,57 +64,57 @@ export function TechDiversityRace() {
     this.dropdown = createSelect();
     // Assign an ID
     this.dropdown.id("company-dropdown");
-    // Attach to an existing element with id="sliders", or wherever you want:
+    // Attach to element with id="sliders" or as needed
     this.dropdown.parent("sliders");
     this.dropdown.class("menu-item");
 
-    // Populate the dropdown with all companies
+    // Populate dropdown with companies
     for (let i = 0; i < this.companyNames.length; i++) {
       this.dropdown.option(this.companyNames[i], i);
     }
-    // Default to the first company
+    // Default to first company
     this.dropdown.selected("0");
 
-    // Hide p5 #canvas
+    // Hide p5 canvas
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) p5CanvasDiv.style.display = "none";
 
-    // Show #three-canvas
+    // Show Three.js canvas
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) threeCanvasDiv.style.display = "block";
 
     initThree();
 
-    // Create the 3D legend (added into the scene)
+    // Create the 3D legend
     createLegend3D();
 
-    // For demonstration, pick the first company
+    // Pick the first company
     let firstCompanyData = self.dataByCompany[0];
     if (!firstCompanyData) {
-      console.log("No company found in dataByCompany.");
+      console.log("No company found in dataByCompany");
       return;
     }
     createRacePie3D(firstCompanyData);
 
-    // Start Three.js loop
+    // Start loop
     animate();
 
     // Listen for dropdown changes
     this.dropdown.changed(() => {
-      // 1) Retrieve the selected company index and name.
+      // Retrieve selected company index and name
       const index = parseInt(self.dropdown.value(), 10);
       const chosenCompany = self.companyNames[index];
 
-      // 2) Update the title property to include the company name.
+      // Update title to include company name
       self.title = `Tech Diversity by Race (3D) at ${chosenCompany}`;
 
-      // 3) Update the HTML element with id "visual-title"
+      // Update HTML element with id "visual-title"
       let titleEl = select("#visual-title");
       if (titleEl) {
         titleEl.html(self.title);
       }
 
-      // 4) Update the 3D visualization: remove old slices and create a new pie.
+      // Update 3D visualization: remove old slices and create new pie
       let obj = self.dataByCompany.find((d) => d.company === chosenCompany);
       if (!obj) return;
       scene.remove(raceGroup);
@@ -132,9 +122,7 @@ export function TechDiversityRace() {
     });
   };
 
-  // ------------------------------------------------
-  // 3) DESTROY: revert to p5, remove three.js DOM, and remove legend
-  // ------------------------------------------------
+  // Cleanup when destroyed
   this.destroy = function () {
     if (this.dropdown) {
       this.dropdown.remove();
@@ -148,11 +136,9 @@ export function TechDiversityRace() {
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "block";
     }
-
     if (renderer && renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
-
     // Remove 3D legend group if it exists
     if (legend3DGroup) {
       scene.remove(legend3DGroup);
@@ -160,16 +146,12 @@ export function TechDiversityRace() {
     }
   };
 
-  // ------------------------------------------------
-  // 4) DRAW: p5 calls this each frame, but we do nothing here
-  // ------------------------------------------------
-  this.draw = function () {
-    // No drawing code here; updates are handled via the Three.js animation loop.
-  };
+  // Draw is handled by the Three.js animation loop
+  this.draw = function () {};
 
-  // ------------------------------------------------
-  // invertData(raceDocs): from "by race" to "by company"
-  // ------------------------------------------------
+  /**
+  // invertData(raceDocs): from by race to by company
+   */
   function invertData(raceDocs) {
     let companiesMap = {};
     raceDocs.forEach((doc) => {
@@ -186,17 +168,17 @@ export function TechDiversityRace() {
     return Object.values(companiesMap);
   }
 
-  // ------------------------------------------------
+  /** 
   // initThree(): set up scene, camera, lights, controls
-  // ------------------------------------------------
+   */
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#3A3E44");
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    // Move the camera to a position that gives a good view of the legend
+    // Position camera for a good view of the legend
     camera.position.set(6, 12, 10);
-    // Make the camera look at the legend (adjust these values as needed)
+    // Make camera look at the legend (adjust values as needed)
     camera.lookAt(new THREE.Vector3(8, 7, 7));
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -220,19 +202,18 @@ export function TechDiversityRace() {
     window.addEventListener("resize", onWindowResize);
   }
 
-  // ------------------------------------------------
-  // createRacePie3D(companyObj) - build an extruded arc for each race
-  // ------------------------------------------------
+  /**
+  // createRacePie3D(companyObj): build arc for each race slice
+   */
   function createRacePie3D(companyObj) {
     // Remove old group if it exists
     if (raceGroup) {
       scene.remove(raceGroup);
     }
-
     raceGroup = new THREE.Group();
     scene.add(raceGroup);
 
-    // Adjust these to match your doc fields
+    // match document fields
     let categories = ["white", "black", "asian", "latino", "other"];
     let values = categories.map((cat) => companyObj[cat] || 0);
     let total = values.reduce((a, b) => a + b, 0);
@@ -260,7 +241,6 @@ export function TechDiversityRace() {
         side: THREE.DoubleSide,
       });
       const mesh = new THREE.Mesh(geometry, material);
-
       mesh.rotation.x = -Math.PI / 2;
       raceGroup.add(mesh);
 
@@ -268,9 +248,9 @@ export function TechDiversityRace() {
     });
   }
 
-  // ------------------------------------------------
-  // createLegend3D(): builds a 3D legend using planes for swatches and TextGeometry for labels
-  // ------------------------------------------------
+  /**
+  // createLegend3D(): builds 3D legend with swatches and labels
+   */
   function createLegend3D() {
     legend3DGroup = new THREE.Group();
 
@@ -287,7 +267,7 @@ export function TechDiversityRace() {
           "#4f9df7",
           "#f4a261",
         ];
-        const legendSpacing = 1.2; // vertical spacing between legend entries
+        const legendSpacing = 1.2; // Vertical spacing between legend entries
 
         for (let i = 0; i < categories.length; i++) {
           // Create a swatch using a PlaneGeometry
@@ -299,30 +279,28 @@ export function TechDiversityRace() {
           swatchMesh.position.set(0, -i * legendSpacing, 0);
           legend3DGroup.add(swatchMesh);
 
-          // Create text geometry for the label
+          // Text geometry for the label
           const textGeom = new TextGeometry(categories[i], {
             font: font,
             size: 0.3,
             height: 0.05,
           });
           const textMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
           const textMesh = new THREE.Mesh(textGeom, textMat);
-          // Position the text to the right of the swatch
+          // Position text to the right of the swatch
           textMesh.position.set(0.6, -i * legendSpacing - 0.2, 0);
           legend3DGroup.add(textMesh);
         }
       }
     );
-    // Position the legend group in the scene (adjust as needed)
+    // Position legend group in scene
     legend3DGroup.position.set(7, 4, -5);
-
     scene.add(legend3DGroup);
   }
 
-  // ------------------------------------------------
-  // animate: standard Three.js loop
-  // ------------------------------------------------
+  /**
+   * Animation loop: updates controls and renders scene
+   */
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -331,9 +309,9 @@ export function TechDiversityRace() {
     }
   }
 
-  // ------------------------------------------------
-  // onWindowResize
-  // ------------------------------------------------
+  /**
+   * Adjust camera/render on window resize
+   */
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();

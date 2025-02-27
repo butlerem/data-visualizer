@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Case study 2: Data visualisation</title>
 
-    <!-- Libraries -->
+    <!-- Import maps for modules -->
     <script type="importmap">
       {
         "imports": {
@@ -15,13 +15,17 @@
         }
       }
     </script>
-    <script src="lib/p5.min.js"></script>
-    <script src="lib/p5.dom.min.js"></script>
+
+    <!-- External CSS -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <link rel="stylesheet" href="style.css" />
+
+    <!-- External Libraries -->
+    <script src="lib/p5.min.js" defer></script>
+    <script src="lib/p5.dom.min.js" defer></script>
   </head>
   <body>
     <div id="app" class="container">
@@ -35,7 +39,7 @@
 
       <!-- Main Content -->
       <div id="main">
-        <!-- Wrapper to keep Canvas and Stats together -->
+        <!-- Canvas and Stats Wrapper -->
         <div class="canvas-wrapper">
           <h2 id="visual-title"></h2>
           <div id="canvas"></div>
@@ -45,7 +49,7 @@
           <div id="sliders"></div>
         </div>
 
-        <!-- Stats Panel (Attached to Canvas) -->
+        <!-- Stats Panel -->
         <div id="stats-panel">
           <div class="stat">
             <h2><i class="material-icons"></i></h2>
@@ -84,7 +88,7 @@
       const analytics = getAnalytics(window.app);
     </script>
 
-    <!-- Main sketch file: Loads your visuals -->
+    <!-- Main sketch file and Helper Functions -->
     <script type="module" src="sketch.js"></script>
     <script type="module" src="helper-functions.js"></script>
   </body>
