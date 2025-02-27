@@ -5,10 +5,12 @@ import {
   drawYAxisTickLabels,
   drawAxis,
   drawAxisLabels,
+  fetchData,
+  hideElement,
 } from "./helper-functions.js";
 
 export function EducationCompletionRate() {
-  const self = this;
+  // Public properties
   this.name = "Education Completion";
   this.id = "education-completion-rate";
   this.title = "Female Primary Education Completion Rate Over Time (by Region)";
@@ -16,20 +18,23 @@ export function EducationCompletionRate() {
   this.xAxisLabel = "Year";
   this.yAxisLabel = "% Completion";
 
-  // Data storage: raw data and grouped data by region
+  // rawData: original records fetched from database
+  // data: processed and grouped data by region
+  // regionColors: mapping of region to a color
   this.rawData = [];
-  this.data = {}; // e.g. { "Africa": [{ year, rate }, ...], ... }
+  this.data = {};
   this.regionColors = {};
 
+  // Default year range
+  this.globalStartYear = 1990;
+  this.globalEndYear = 2022;
+
+  // Statistics for stats panel
   this.stats = [
     { icon: "trending_up", value: "90%", label: "Completion Rate" },
     { icon: "pie_chart", value: "50%", label: "Female Share" },
     { icon: "pie_chart", value: "50%", label: "Male Share" },
   ];
-
-  // Global year range
-  this.globalStartYear = 1990;
-  this.globalEndYear = 2022;
 
   // p5 layout settings
   const marginSize = 35;
@@ -39,37 +44,25 @@ export function EducationCompletionRate() {
     numYTickLabels: 8,
   });
 
-  // UI elements for year range
-  this.sliders = null;
-
-  // For animation
-  this.frameCount = 0;
-
-  // PRELOAD: fetch education completion data
-  this.preload = function () {
-    const self = this;
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "primary_education_completion"));
-      })
-      .then((querySnapshot) => {
-        self.rawData = querySnapshot.docs.map((doc) => doc.data());
-        self.loaded = true;
-        console.log("Education Data loaded:", self.rawData);
-      })
-      .catch((error) => {
-        console.error("Error loading Education data:", error);
-      });
+  // Preload data asynchronously
+  this.preload = async function () {
+    try {
+      this.rawData = await fetchData("primary_education_completion");
+      this.loaded = true;
+      console.log("Education Data loaded");
+    } catch (error) {
+      console.error("Error loading Education data:", error);
+    }
   };
 
-  // SETUP: group data by region, compute averages, and set up UI
+  /**
+   * Setup: Initialize UI, process data, group by region
+   */
   this.setup = function () {
     if (!this.loaded || !this.rawData.length) {
       console.warn("EducationCompletionRate: Data not loaded or empty.");
       return;
     }
-
     textSize(16);
     textAlign(CENTER, CENTER);
 
@@ -88,8 +81,9 @@ export function EducationCompletionRate() {
         const val = row[strYear];
         if (val !== undefined && val !== "") {
           const numVal = parseFloat(val);
-          if (!regionYearValues[region][year])
+          if (!regionYearValues[region][year]) {
             regionYearValues[region][year] = [];
+          }
           regionYearValues[region][year].push(numVal);
         }
       }
@@ -109,11 +103,9 @@ export function EducationCompletionRate() {
           this.data[region].push({ year, rate: avg });
         }
       }
-      // Ensure data is sorted by year
-      this.data[region].sort((a, b) => a.year - b.year);
     }
 
-    // Compute overall min and max rates across regions
+    // Compute overall min and max rates across regions.
     const allRates = [];
     for (let region in this.data) {
       for (let entry of this.data[region]) {
@@ -123,10 +115,7 @@ export function EducationCompletionRate() {
     this.minRate = Math.min(...allRates);
     this.maxRate = Math.max(...allRates);
 
-    // Create sliders using helper
-    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
-
-    // Assign distinct colors to each region
+    // Assign distinct colors to each region.
     const availableColors = [
       color("#ab52d5"), // Vibrant Purple
       color("#84d7d9"), // Soft Cyan
@@ -142,30 +131,37 @@ export function EducationCompletionRate() {
       colorIndex++;
     }
 
+    // Create sliders for year range
+    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
+
+    // Reset animation frame count
     this.frameCount = 0;
   };
 
-  // DESTROY: remove UI elements
+  // Destroy visual, clean up UI elements
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
+    hideElement("education-visualization");
   };
 
-  // DRAW: render the education completion chart
+  // Draw: Render the education completion chart
   this.draw = function () {
-    if (!this.loaded || Object.keys(this.data).length === 0) {
-      console.log("EducationCompletionRate: Data not ready in draw()");
+    if (!this.loaded) {
+      console.log("Education Completion data not loaded yet.");
       return;
     }
 
-    // Ensure valid slider values
+    // Ensure slider values are valid (start less than end)
     if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
       this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
     }
 
+    // Update year range based on slider values
     this.startYear = parseInt(this.sliders.startSlider.value());
     this.endYear = parseInt(this.sliders.endSlider.value());
     const numYears = this.endYear - this.startYear;
 
+    // Draw y-axis tick labels and axes
     drawYAxisTickLabels(
       this.minRate,
       this.maxRate,
@@ -176,7 +172,7 @@ export function EducationCompletionRate() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw X tick labels
+    // Draw the x tick labels
     const xTickSkip = ceil(numYears / this.layout.numXTickLabels);
     for (let yr = this.startYear; yr <= this.endYear; yr++) {
       if ((yr - this.startYear) % xTickSkip === 0) {
@@ -189,8 +185,9 @@ export function EducationCompletionRate() {
       }
     }
 
-    // Draw lines for each region
+    // Draw lines by region
     for (let region in this.data) {
+      // Filter data points for current year range
       const regionData = this.data[region].filter(
         (d) => d.year >= this.startYear
       );
@@ -202,6 +199,7 @@ export function EducationCompletionRate() {
 
       beginShape();
       let count = 0;
+      // Draw data progressively for animation
       for (let pt of regionData) {
         if (count >= this.frameCount) break;
         vertex(this.mapYearToWidth(pt.year), this.mapRateToHeight(pt.rate));
@@ -210,13 +208,18 @@ export function EducationCompletionRate() {
       endShape();
     }
 
+    // Increase frame count to animate progressively
     this.frameCount++;
     if (this.frameCount >= numYears) {
       this.frameCount = numYears;
     }
   };
 
-  // Helper: Map a year value to an x-coordinate
+  /**
+   * Helper: Maps a given year to its corresponding x-coordinate
+   * @param {number} year - year to be mapped
+   * @returns {number} - x-coordinate based on the current layout
+   */
   this.mapYearToWidth = function (year) {
     return map(
       year,
@@ -227,7 +230,11 @@ export function EducationCompletionRate() {
     );
   };
 
-  // Helper: Map a rate value to a y-coordinate
+  /**
+   * Helper: Maps a rate value to its corresponding y-coordinate on the canvas
+   * @param {number} rate - education completion rate
+   * @returns {number} - y-coordinate based on the current layout
+   */
   this.mapRateToHeight = function (rate) {
     return map(
       rate,

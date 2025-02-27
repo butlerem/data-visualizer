@@ -1,34 +1,43 @@
-// helper-functions.js
+import * as THREE from "three";
+import { FontLoader } from "three/addons/loaders/FontLoader.js";
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 // --------------------------------------------------------------------
-// Layout and UI Helper Functions
+// Helper Functions for Layout, UI, and Three.js Setup
 // --------------------------------------------------------------------
 
+/**
+ * Creates a layout configuration for graph plotting.
+ */
 export const createLayout = (
   marginSize,
   canvasWidth,
   canvasHeight,
   options = {}
 ) => {
+  const leftMargin = marginSize * 2;
+  const rightMargin = canvasWidth - marginSize * 2;
+  const topMargin = marginSize;
+  const bottomMargin = canvasHeight - marginSize * 2;
+
   return {
     marginSize,
-    leftMargin: marginSize * 2,
-    rightMargin: canvasWidth - marginSize * 2,
-    topMargin: marginSize,
-    bottomMargin: canvasHeight - marginSize * 2,
+    leftMargin,
+    rightMargin,
+    topMargin,
+    bottomMargin,
     pad: 5,
     grid: options.grid || false,
     numXTickLabels: options.numXTickLabels || 10,
     numYTickLabels: options.numYTickLabels || 8,
-    plotWidth() {
-      return this.rightMargin - this.leftMargin;
-    },
-    plotHeight() {
-      return this.bottomMargin - this.topMargin;
-    },
+    plotWidth: () => rightMargin - leftMargin,
+    plotHeight: () => bottomMargin - topMargin,
   };
 };
 
+/**
+ * Creates year range sliders for selecting a start and end year.
+ */
 export const createYearSliders = (
   minYear,
   maxYear,
@@ -59,12 +68,15 @@ export const createYearSliders = (
   return { startSlider, endSlider, yearLabel };
 };
 
+/**
+ * Removes year sliders from the DOM.
+ */
 export const removeYearSliders = (sliderObj) => {
-  if (sliderObj.startSlider) sliderObj.startSlider.remove();
-  if (sliderObj.endSlider) sliderObj.endSlider.remove();
-  if (sliderObj.yearLabel) sliderObj.yearLabel.remove();
+  ["startSlider", "endSlider", "yearLabel"].forEach((key) => {
+    if (sliderObj[key]) sliderObj[key].remove();
+  });
 
-  // Optionally, clear the parent container
+  // Clear parent container if it exists
   const slidersDiv = document.getElementById("sliders");
   if (slidersDiv) {
     slidersDiv.innerHTML = "";
@@ -72,24 +84,34 @@ export const removeYearSliders = (sliderObj) => {
 };
 
 // --------------------------------------------------------------------
-// Data Processing Helper Functions
+// Data Processing Helpers
 // --------------------------------------------------------------------
 
+/**
+ * Converts an array of strings to numbers.
+ */
 export const stringsToNumbers = (array) => array.map(Number);
 
+/**
+ * Calculates the sum of a numerical dataset.
+ */
 export const sum = (data) => {
   const numbers = stringsToNumbers(data);
   return numbers.reduce((total, value) => total + value, 0);
 };
 
-export const mean = (data) => {
-  return sum(data) / data.length;
-};
+/**
+ * Computes the mean (average) of a dataset.
+ */
+export const mean = (data) => sum(data) / data.length;
 
+/**
+ * Extracts a range of numbers from a row object.
+ */
 export const sliceRowNumbers = (row, start = 0, end) => {
   const rowData = [];
-  // If no end is provided, use row.arr.length
-  end = end || row.arr.length;
+  end = end || row.arr.length; // Use row length if no end is specified
+
   for (let i = start; i < end; i++) {
     rowData.push(row.getNum(i));
   }
@@ -100,8 +122,12 @@ export const sliceRowNumbers = (row, start = 0, end) => {
 // Plotting Helper Functions
 // --------------------------------------------------------------------
 
+/**
+ * Draws the x-axis and y-axis on the canvas.
+ */
 export const drawAxis = (layout, colour = 0) => {
   stroke(color(colour));
+
   // x-axis
   line(
     layout.leftMargin,
@@ -109,6 +135,7 @@ export const drawAxis = (layout, colour = 0) => {
     layout.rightMargin,
     layout.bottomMargin
   );
+
   // y-axis
   line(
     layout.leftMargin,
@@ -118,16 +145,21 @@ export const drawAxis = (layout, colour = 0) => {
   );
 };
 
+/**
+ * Draws axis labels for x and y axes.
+ */
 export const drawAxisLabels = (xLabel, yLabel, layout) => {
   fill(255);
   noStroke();
   textAlign(CENTER, CENTER);
+
   // x-axis label
   text(
     xLabel,
     layout.leftMargin + layout.plotWidth() / 2,
     layout.bottomMargin + layout.marginSize * 1.5
   );
+
   // y-axis label
   push();
   translate(
@@ -139,6 +171,9 @@ export const drawAxisLabels = (xLabel, yLabel, layout) => {
   pop();
 };
 
+/**
+ * Draws y-axis tick labels.
+ */
 export const drawYAxisTickLabels = (
   min,
   max,
@@ -163,6 +198,9 @@ export const drawYAxisTickLabels = (
   }
 };
 
+/**
+ * Draws x-axis tick labels.
+ */
 export const drawXAxisTickLabel = (value, layout, mapFunction) => {
   const x = mapFunction(value);
   fill(255);
@@ -175,9 +213,85 @@ export const drawXAxisTickLabel = (value, layout, mapFunction) => {
   }
 };
 
+/**
+ * Draws a title at the top of the visualization.
+ */
 export const drawTitle = (txt, margin = 40) => {
   fill(255);
   noStroke();
   textSize(16);
   text(txt, width / 2, margin / 2);
 };
+
+// --------------------------------------------------------------------
+// DOM Utilities
+// --------------------------------------------------------------------
+
+/**
+ * Displays an HTML element by ID.
+ */
+export const showElement = (id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = "block";
+  }
+};
+
+/**
+ * Hides an HTML element by ID.
+ */
+export const hideElement = (id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = "none";
+  }
+};
+
+// --------------------------------------------------------------------
+// Three.js Helpers
+// --------------------------------------------------------------------
+
+/**
+ * Retrieves the dimensions of the Three.js canvas.
+ */
+export function getThreeCanvasDimensions() {
+  const el = document.getElementById("three-canvas");
+  const width = el ? el.clientWidth : window.innerWidth;
+  const height = el ? el.clientHeight : window.innerHeight;
+  return { width, height, aspect: width / height };
+}
+
+/**
+ * Fetches data from Firestore.
+ */
+export const fetchData = async (collectionName) => {
+  try {
+    const { getFirestore, collection, getDocs } = await import(
+      "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js"
+    );
+    const db = getFirestore(window.app);
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    return querySnapshot.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error(`Error loading data from ${collectionName}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Creates a 3D text mesh in Three.js.
+ */
+export function createTextMesh(text, options, onLoad) {
+  const loader = new FontLoader();
+  loader.load(options.fontUrl, (font) => {
+    const geometry = new TextGeometry(text, {
+      font: font,
+      size: options.size || 0.5,
+      height: options.height || 0.1,
+    });
+    const material =
+      options.material || new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const mesh = new THREE.Mesh(geometry, material);
+    onLoad(mesh);
+  });
+}

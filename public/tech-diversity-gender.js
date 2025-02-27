@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { fetchData } from "./helper-functions.js";
 
 export function TechDiversityGender() {
+  // Public properties
   const self = this;
   self.name = "Tech Gender Diversity 3D";
   self.id = "tech-diversity-gender-3d";
@@ -42,10 +44,7 @@ export function TechDiversityGender() {
         // Convert docs to a JS array
         self.data = querySnapshot.docs.map((doc) => doc.data());
         self.loaded = true;
-        console.log(
-          "Tech Diversity Gender data loaded from Firestore:",
-          self.data
-        );
+        console.log("Tech Diversity Gender data loaded");
       })
       .catch((error) => {
         console.error("Error loading Tech Diversity Gender data:", error);

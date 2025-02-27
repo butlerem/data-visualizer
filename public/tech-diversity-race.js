@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { fetchData } from "./helper-functions.js";
 
 export function TechDiversityRace() {
+  // Public properties
   const self = this;
   self.name = "Tech Race Diversity";
   self.id = "tech-diversity-race";
@@ -38,15 +40,11 @@ export function TechDiversityRace() {
       .then((querySnapshot) => {
         self.raceDocs = [];
         querySnapshot.forEach((doc) => {
-          console.log("Doc ID:", doc.id, " => ", doc.data());
           self.raceDocs.push({ race: doc.id, ...doc.data() });
         });
-        console.log("Raw raceDocs array:", self.raceDocs);
-
         self.dataByCompany = invertData(self.raceDocs);
-        console.log("Final dataByCompany array:", self.dataByCompany);
-
         self.loaded = true;
+        console.log("Tech Diversity Race data loaded");
       })
       .catch((error) => {
         console.error("Error loading TechDiversityRace3D data:", error);

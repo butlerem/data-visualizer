@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { fetchData, showElement, hideElement } from "./helper-functions.js";
 
 export function PayGapByJob2017() {
+  // Public properties
   const self = this;
   self.name = "Pay Gap By Job";
   self.id = "pay-gap-by-job-2017";
@@ -11,6 +13,7 @@ export function PayGapByJob2017() {
   self.loaded = false;
   self.data = [];
 
+  // Statistics for stats panel
   self.stats = [
     { icon: "trending_down", value: "15%", label: "Average Gap" },
     { icon: "work", value: "$120K", label: "Median Salary" },
@@ -32,78 +35,65 @@ export function PayGapByJob2017() {
     "Caring, leisure and other service occupations": 0xf4a6a0,
   };
 
-  // Preload: load Firestore docs
-  this.preload = function () {
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "occupation_pay_gap"));
-      })
-      .then((querySnapshot) => {
-        // Convert docs to array
-        self.data = querySnapshot.docs.map((doc) => doc.data());
-        self.loaded = true;
-        console.log("occupation_pay_gap data:", self.data);
-      })
-      .catch((error) => {
-        console.error("Error loading data:", error);
-      });
+  /**
+   * Preload: Fetch occupation pay gap data.
+   */
+  this.preload = async function () {
+    try {
+      this.data = await fetchData("occupation_pay_gap");
+      this.loaded = true;
+      console.log("Occupation Data loaded");
+    } catch (error) {
+      console.error("Error loading Occupation data:", error);
+    }
   };
 
-  // Setup: hide p5 canvas, show three.js container, init scene
+  /**
+   * Setup:
+   * - Hide the p5 canvas.
+   * - Show the Three.js container.
+   * - Initialize the Three.js scene.
+   */
   this.setup = function () {
-    // If data not loaded or empty, skip
     if (!self.loaded || !self.data.length) {
       console.log("PayGapByJob2017: data not loaded yet.");
       return;
     }
 
-    // Hide p5 #canvas
-    const p5CanvasDiv = document.getElementById("canvas");
-    if (p5CanvasDiv) {
-      p5CanvasDiv.style.display = "none";
-    }
+    // Hide p5 canvas and show Three.js container using helpers.
+    hideElement("canvas");
+    showElement("three-canvas");
 
-    // Show #three-canvas
+    // Clear Three.js container.
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
-      threeCanvasDiv.style.display = "block";
       threeCanvasDiv.innerHTML = "";
     }
 
-    // Init Three.js
-    // Create bubbles  & labels
-    // Start the render loop
+    // Initialize Three.js scene.
     initThree();
     createBubbles();
     createAxisLabels();
     animate();
   };
 
-  // Draw: p5 calls this, but we do nothing in Three.js
+  /**
+   * Draw: Empty because Three.js handles rendering via its animation loop.
+   */
   this.draw = function () {
-    // Empty. We rely on Three.js's animate() with requestAnimationFrame.
+    // Three.js rendering handled in animate().
   };
 
-  // 4) DESTROY: revert to p5, remove Three.js DOM
   this.destroy = function () {
-    // Hide Three.js
-    const threeCanvasDiv = document.getElementById("three-canvas");
-    if (threeCanvasDiv) {
-      threeCanvasDiv.style.display = "none";
-    }
-    // Show p5 canvas
-    const p5CanvasDiv = document.getElementById("canvas");
-    if (p5CanvasDiv) {
-      p5CanvasDiv.style.display = "block";
-    }
-    // Remove Three.js canvas
+    hideElement("three-canvas");
+    showElement("canvas");
     if (renderer && renderer.domElement && renderer.domElement.parentNode) {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
 
-  // --- THREE.JS INIT ---
+  // --- THREE.JS SETUP FUNCTIONS ---
+
   function initThree() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("#3A3E44");
@@ -144,57 +134,40 @@ export function PayGapByJob2017() {
     window.addEventListener("resize", onWindowResize);
   }
 
-  // Create Bubbles
   function createBubbles() {
-    // Interpret these fields from each doc:
-    // proportion_female, pay_gap, num_jobs, job_type, ...
-    // Adjust the scale
     const scaleFactor = 0.05; // For bubble size
 
-    for (let i = 0; i < self.data.length; i++) {
-      const doc = self.data[i];
+    self.data.forEach((doc) => {
+      const propFemale = parseFloat(doc.proportion_female) || 0;
+      const payGap = parseFloat(doc.pay_gap) || 0;
+      const numJobs = parseFloat(doc.num_jobs) || 0;
+      const jobType = doc.job_type || "Unknown";
 
-      let propFemale = parseFloat(doc.proportion_female) || 0;
-      let payGap = parseFloat(doc.pay_gap) || 0;
-      let numJobs = parseFloat(doc.num_jobs) || 0;
-      let jobType = doc.job_type || "Unknown";
-
-      // Convert these to 3D coords:
-      // x => around 0 for 50% female, so shift by 50
-      // y => direct from payGap
-      // z => from numJobs
-      const x = (propFemale - 50) / 2; // center around 50
+      // Convert these to 3D coordinates.
+      const x = (propFemale - 50) / 2; // center around 50%
       const y = payGap;
       const z = (numJobs - 1000) / 100;
-      // bubble size
       const size = Math.sqrt(numJobs) * scaleFactor;
+      const colorValue = jobTypeColors[jobType] || 0xffffff;
 
-      // Color based on jobType
-      let color = jobTypeColors[jobType] || 0xffffff;
-
-      // Create geometry
-      let geometry = new THREE.SphereGeometry(size, 8, 8);
-      let material = new THREE.MeshPhongMaterial({
-        color,
+      const geometry = new THREE.SphereGeometry(size, 8, 8);
+      const material = new THREE.MeshPhongMaterial({
+        color: colorValue,
         transparent: true,
         opacity: 0.8,
       });
-      let bubble = new THREE.Mesh(geometry, material);
-
+      const bubble = new THREE.Mesh(geometry, material);
       bubble.position.set(x, y, z);
       bubblesGroup.add(bubble);
-    }
+    });
   }
 
-  // Create Axis Labels
   function createAxisLabels() {
     const loader = new FontLoader();
     loader.load(
       "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
       function (font) {
         const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-        // Axis labels
         const labels = [
           {
             text: "Proportion Female (%)",
@@ -225,28 +198,15 @@ export function PayGapByJob2017() {
           scene.add(label);
         });
 
+        // Optionally add tick marks.
         addTickMarks(font);
       }
     );
   }
 
   function addTickMarks(font) {
-    // This code is mostly decorative for drawing ticks on x,y,z
-    // You can adjust or remove as needed
-    const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-    const gridSize = 40;
-    const numTicks = 10;
-    const tickSpacing = gridSize / numTicks;
-
-    // Example X-axis ticks from -20..20 => labeled (value + 50)
-    // etc...
-    // You can keep or simplify, but the key is we no longer rely on a CSV or p5.Table
-    // Just drawing lines and text in 3D space.
+    // Tick marks implementation can be added here if desired.
   }
-
-  // animate: main Three.js loop
 
   function animate() {
     requestAnimationFrame(animate);
@@ -256,15 +216,12 @@ export function PayGapByJob2017() {
     }
   }
 
-  // onWindowResize
-
   function onWindowResize() {
     camera.aspect = getAspect();
     camera.updateProjectionMatrix();
     renderer.setSize(getWidth(), getHeight());
   }
 
-  // Helper: #three-canvas dims
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;

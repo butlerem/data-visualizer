@@ -1,4 +1,7 @@
+import { fetchData } from "./helper-functions.js";
+
 export function EducationGenderRadar() {
+  // Public properties
   const self = this;
   this.name = "Education Gender Radar";
   this.id = "education-gender-radar";
@@ -6,44 +9,40 @@ export function EducationGenderRadar() {
   this.loaded = false;
   this.data = [];
 
+  // Aggregated data
+  this.categories = [];
+  this.maleValues = [];
+  this.femaleValues = [];
+
+  // Default year range
+  this.minYear = 1996;
+  this.maxYear = 2023;
+
+  // UI Elements
+  this.sliders = null;
+
   this.stats = [
     { icon: "school", value: "60%", label: "Female Participation" },
     { icon: "school", value: "40%", label: "Male Participation" },
     { icon: "pie_chart", value: "100%", label: "Total Enrollment" },
   ];
 
-  // Hold aggregated values.
-  this.categories = [];
-  this.maleValues = [];
-  this.femaleValues = [];
-
-  // Define available year range (adjust as needed)
-  this.minYear = 1996;
-  this.maxYear = 2023;
-
-  // Preload: Query the "education_gender" collection from Firestore.
-  this.preload = function () {
-    var self = this;
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "education_gender"));
-      })
-      .then((querySnapshot) => {
-        self.data = querySnapshot.docs.map((doc) => doc.data());
-        self.loaded = true;
-        console.log("Education Gender data loaded from Firestore:", self.data);
-        // Do an initial filter after data loads.
-        self.filterData();
-      })
-      .catch((error) => {
-        console.error("Error loading Education Gender data:", error);
-      });
+  // Preload data asynchronously
+  this.preload = async function () {
+    try {
+      this.data = await fetchData("education_gender");
+      this.loaded = true;
+      console.log("Climate Change Data loaded");
+    } catch (error) {
+      console.error("Error loading Climate Change data:", error);
+    }
   };
 
-  // Setup: Create sliders, set chart dimensions, and filter data.
+  /**
+   * Setup: Initialize sliders, process data, set chart dimensions
+   */
   this.setup = function () {
-    // Create sliders and label only once.
+    // Create sliders and label
     if (!this.startSlider) {
       this.startSlider = createSlider(
         this.minYear,
@@ -72,9 +71,8 @@ export function EducationGenderRadar() {
           this.endSlider.value()
       );
       this.yearLabel.parent("sliders");
-      this.yearLabel.style("color", "  color: #a0aec0;");
     }
-    // When slider values change, update label and re-filter data.
+    // When slider values change, update label and filter data again
     const updateLabelAndFilter = () => {
       this.yearLabel.html(
         "Start Year: " +
@@ -87,19 +85,19 @@ export function EducationGenderRadar() {
     this.startSlider.input(updateLabelAndFilter);
     this.endSlider.input(updateLabelAndFilter);
 
-    // Set chart dimensions.
+    // Set chart dimensions
     this.chartCenterX = width / 2;
     this.chartCenterY = height / 2;
     this.chartRadius = min(width, height) * 0.4;
 
-    // Filter data based on the current slider values.
+    // Filter data based on current slider values
     this.filterData();
   };
 
-  // Filter and aggregate data based on selected year range.
+  // Filter and aggregate data based on selected range
   this.filterData = function () {
     if (!this.loaded) return;
-    // Use slider values if they exist; otherwise use default years.
+    // Use slider values if they exist
     let startYear = this.startSlider
       ? parseInt(this.startSlider.value())
       : this.minYear;
@@ -107,13 +105,13 @@ export function EducationGenderRadar() {
       ? parseInt(this.endSlider.value())
       : this.maxYear;
 
-    // Filter records within the selected year range.
+    // Filter records within the selected range
     let filteredData = this.data.filter((d) => {
       let year = parseInt(d["Year"]);
       return year >= startYear && year <= endYear;
     });
 
-    // Aggregate data by category. Average male and female percentages for each category.
+    // Aggregate data by category, average male and female percentages for each category
     let aggregated = {};
     filteredData.forEach((rec) => {
       let category = rec["Category"];
@@ -129,12 +127,12 @@ export function EducationGenderRadar() {
       }
     });
 
-    // Reset arrays.
+    // Reset arrays
     this.categories = [];
     this.maleValues = [];
     this.femaleValues = [];
 
-    // Populate arrays with the aggregated (average) values.
+    // Populate arrays with the average values
     for (let category in aggregated) {
       let group = aggregated[category];
       let avgMale = group.sumMale / group.count;
@@ -145,7 +143,7 @@ export function EducationGenderRadar() {
     }
   };
 
-  // Destroy: Remove slider UI elements.
+  // Destroy visual, clean up UI elements
   this.destroy = function () {
     if (this.startSlider) {
       this.startSlider.remove();
@@ -161,7 +159,7 @@ export function EducationGenderRadar() {
     }
   };
 
-  // Draw: Render the radar chart using p5.js functions.
+  // Draw: Render the radar chart
   this.draw = function () {
     if (!this.loaded) {
       console.log("Education Gender data not loaded yet.");
@@ -172,7 +170,7 @@ export function EducationGenderRadar() {
     if (n === 0) return;
     let angleStep = TWO_PI / n;
 
-    // Draw the axes and category labels.
+    // Draw the axes and category labels
     stroke(200);
     for (let i = 0; i < n; i++) {
       let angle = i * angleStep - PI / 2;
@@ -185,7 +183,7 @@ export function EducationGenderRadar() {
       text(this.categories[i], x, y);
     }
 
-    // Draw concentric circles for reference.
+    // Draw concentric circles for reference
     noFill();
     stroke(150);
     for (let r = 1; r <= 5; r++) {
@@ -193,8 +191,8 @@ export function EducationGenderRadar() {
       ellipse(this.chartCenterX, this.chartCenterY, rad * 2, rad * 2);
     }
 
-    // Draw the male data polygon (cyan).
-    fill(132, 215, 217, 100); // Equivalent to #84d7d9 with 100 alpha
+    // Draw the male data polygon (cyan)
+    fill(132, 215, 217, 100);
     stroke(132, 215, 217);
     beginShape();
     for (let i = 0; i < n; i++) {
@@ -207,8 +205,8 @@ export function EducationGenderRadar() {
     }
     endShape(CLOSE);
 
-    // Draw the female data polygon (purple).
-    fill(171, 82, 213, 100); // Equivalent to #ab52d5 with 100 alpha
+    // Draw the female data polygon (purple)
+    fill(171, 82, 213, 100);
     stroke(171, 82, 213);
     beginShape();
     for (let i = 0; i < n; i++) {

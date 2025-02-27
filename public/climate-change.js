@@ -5,10 +5,11 @@ import {
   drawYAxisTickLabels,
   drawAxis,
   drawAxisLabels,
+  fetchData,
 } from "./helper-functions.js";
 
 export function ClimateChange() {
-  const self = this;
+  // Public properties
   this.name = "Climate Change";
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
@@ -17,18 +18,18 @@ export function ClimateChange() {
   this.yAxisLabel = "Change in ℃";
   this.data = [];
 
+  // Statistics for stats panel
   this.stats = [
     { icon: "eco", value: "0.5℃", label: "Avg Increase" },
     { icon: "trending_up", value: "2.0℃", label: "Max Increase" },
     { icon: "trending_down", value: "-1.0℃", label: "Min Increase" },
   ];
 
-  // Global settings for data range
-  this.minYear = null;
-  this.maxYear = null;
-  this.minTemperature = null;
-  this.maxTemperature = null;
-  this.meanTemperature = null;
+  /**
+   * TODO: Make the stats panel dynamically update based on data for all visuals.
+   * - Extract relevant statistics from the dataset like min max average.
+   * - Automatically update stats panel for better insights.
+   */
 
   // p5 layout settings
   const marginSize = 35;
@@ -37,89 +38,68 @@ export function ClimateChange() {
     numXTickLabels: 8,
     numYTickLabels: 8,
   });
+  textSize(16);
+  textAlign(CENTER, CENTER);
 
-  // UI elements for year range
-  this.sliders = null;
-
-  // For animation
-  this.frameCount = 0;
-
-  // PRELOAD: fetch temperature data
-  this.preload = function () {
-    const self = this;
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "surface_temp"));
-      })
-      .then((querySnapshot) => {
-        self.data = querySnapshot.docs.map((doc) => doc.data());
-        self.loaded = true;
-        console.log("Climate Change Data loaded:", self.data);
-      })
-      .catch((error) => {
-        console.error("Error loading Climate Change data:", error);
-      });
+  // Preload data
+  this.preload = async function () {
+    try {
+      let rawData = await fetchData("surface_temp");
+      // Convert string data to numeric values
+      this.data = rawData.map((d) => ({
+        year: parseFloat(d.year),
+        temperature: parseFloat(d.temperature),
+      }));
+      this.loaded = true;
+      console.log("Climate Change Data loaded");
+    } catch (error) {
+      console.error("Error loading Climate Change data:", error);
+    }
   };
 
-  // SETUP: process data and create UI elements
+  /**
+   * Setup: Initialize UI, sort data
+   */
   this.setup = function () {
-    // Update layout in case canvas size changed
-    this.layout = createLayout(marginSize, width, height, {
-      grid: false,
-      numXTickLabels: 8,
-      numYTickLabels: 8,
-    });
-    textSize(16);
-    textAlign(CENTER, CENTER);
-
-    if (!this.loaded || !this.data.length) {
-      console.warn("ClimateChange: Data not loaded or empty.");
-      return;
-    }
-
-    // Sort data by year
-    this.data.sort((a, b) => a.year - b.year);
-
-    // Set min/max years and temperature values
-    const allYears = this.data.map((d) => d.year);
-    this.minYear = Math.min(...allYears);
-    this.maxYear = Math.max(...allYears);
+    // Define the data range
+    this.minYear = this.data[0].year;
+    this.maxYear = this.data[this.data.length - 1].year;
     const allTemps = this.data.map((d) => d.temperature);
     this.minTemperature = Math.min(...allTemps);
     this.maxTemperature = Math.max(...allTemps);
     this.meanTemperature =
       allTemps.reduce((acc, t) => acc + t, 0) / this.data.length;
 
-    // Create sliders using helper
+    // Create sliders for year range
     this.sliders = createYearSliders(this.minYear, this.maxYear);
 
-    // Reset animation frame count whenever setup is called
+    // Reset animation frame count
     this.frameCount = 0;
   };
 
-  // DESTROY: clean up UI elements
+  // Destroy visual, clean up UI elements
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
   };
 
-  // DRAW: p5 draw loop for rendering climate data
+  // Draw: Render the line chart
   this.draw = function () {
-    if (!this.loaded || !this.data.length) {
-      console.log("ClimateChange: Data not ready in draw()");
+    if (!this.loaded) {
+      console.log("Climate data not loaded yet.");
       return;
     }
 
-    // Ensure valid slider values
+    // Ensure slider values are valid (start less than end)
     if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
       this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
     }
 
+    // Update year range based on slider values
     this.startYear = parseInt(this.sliders.startSlider.value());
     this.endYear = parseInt(this.sliders.endSlider.value());
     const numYears = this.endYear - this.startYear;
 
-    // Draw axes and labels
+    // Draw y-axis tick labels and axes
     drawYAxisTickLabels(
       this.minTemperature,
       this.maxTemperature,
@@ -130,7 +110,7 @@ export function ClimateChange() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw the average temperature line
+    // Draw mean temperature line
     stroke(200);
     strokeWeight(1);
     line(
@@ -140,25 +120,21 @@ export function ClimateChange() {
       this.mapTemperatureToHeight(this.meanTemperature)
     );
 
-    // Draw data segments and lines
+    // Draw each segment of the data with animation
     const segmentWidth =
       this.layout.plotWidth() / (this.endYear - this.startYear);
     let previous = null;
     let segmentsDrawn = 0;
 
     for (let i = 0; i < this.data.length; i++) {
-      const current = {
-        year: Number(this.data[i].year),
-        temperature: Number(this.data[i].temperature),
-      };
-
+      const current = this.data[i];
       if (
         previous &&
         current.year > this.startYear &&
         current.year <= this.endYear
       ) {
         if (segmentsDrawn < this.frameCount) {
-          // Draw background rectangle for temperature color
+          // Draw background rectangle representing temperature
           noStroke();
           fill(this.mapTemperatureToColour(current.temperature));
           rect(
@@ -167,7 +143,7 @@ export function ClimateChange() {
             segmentWidth,
             this.layout.plotHeight()
           );
-          // Draw connecting line
+          // Draw connecting line between data points
           stroke(200);
           line(
             this.mapYearToWidth(previous.year),
@@ -181,13 +157,18 @@ export function ClimateChange() {
       previous = current;
     }
 
+    // Increase frame count to animate progressively
     this.frameCount += 2;
     if (this.frameCount >= numYears) {
       this.frameCount = numYears;
     }
   };
 
-  // Helper: Map year to x-coordinate based on current slider values
+  /**
+   * Helper: Maps a given year to its x-coordinate
+   * @param {number} year - year to map.
+   * @returns {number} - x-coordinate value.
+   */
   this.mapYearToWidth = function (year) {
     return map(
       year,
@@ -198,7 +179,11 @@ export function ClimateChange() {
     );
   };
 
-  // Helper: Map temperature to y-coordinate
+  /**
+   * Helper: Maps a temperature value to its corresponding y-coordinate
+   * @param {number} temp - temperature value
+   * @returns {number} - y-coordinate value
+   */
   this.mapTemperatureToHeight = function (temp) {
     return map(
       temp,
@@ -209,11 +194,15 @@ export function ClimateChange() {
     );
   };
 
-  // Helper: Map temperature to a color
+  /**
+   * Helper: Maps a temperature value to a color
+   * @param {number} temp - temperature value
+   * @returns {p5.Color} - color corresponding to the temperature
+   */
   this.mapTemperatureToColour = function (temp) {
-    const red = map(temp, this.minTemperature, this.maxTemperature, 231, 79); // Coral Red (#e76f51 → RGB(231, 111, 81))
-    const green = map(temp, this.minTemperature, this.maxTemperature, 111, 157); // Interpolating green values
-    const blue = map(temp, this.minTemperature, this.maxTemperature, 81, 247); // Light Blue (#4f9df7 → RGB(79, 157, 247))
+    const red = map(temp, this.minTemperature, this.maxTemperature, 231, 79);
+    const green = map(temp, this.minTemperature, this.maxTemperature, 111, 157);
+    const blue = map(temp, this.minTemperature, this.maxTemperature, 81, 247);
     return color(red, green, blue, 80);
   };
 }

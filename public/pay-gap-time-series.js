@@ -5,9 +5,11 @@ import {
   drawYAxisTickLabels,
   drawAxis,
   drawAxisLabels,
+  fetchData,
 } from "./helper-functions.js";
 
 export function PayGapTimeSeries() {
+  // Public properties
   const self = this;
   this.name = "Pay Gap Over Time";
   this.id = "pay-gap-timeseries";
@@ -17,96 +19,60 @@ export function PayGapTimeSeries() {
   this.yAxisLabel = "%";
   this.data = [];
 
+  // Statistics for stats panel
   this.stats = [
     { icon: "timeline", value: "10%", label: "Min Gap" },
     { icon: "timeline", value: "20%", label: "Max Gap" },
     { icon: "timeline", value: "15%", label: "Average Gap" },
   ];
 
-  // Global settings for the data range (will be updated on setup)
-  this.globalStartYear = 1997;
-  this.globalEndYear = 2017;
-  this.minPayGap = 0;
-  this.maxPayGap = 30;
-
-  // p5 layout: using a marginSize of 35
+  // p5 layout: using a marginSize of 35. (Assuming global variables width and height from p5.)
   const marginSize = 35;
   this.layout = createLayout(marginSize, width, height, {
     grid: true,
     numXTickLabels: 10,
     numYTickLabels: 8,
   });
+  textSize(16);
+  textAlign(CENTER, CENTER);
 
-  // UI elements for year range
-  this.sliders = null;
-
-  // For animation
-  this.frameCount = 0;
-
-  // PRELOAD: fetch data from Firestore
-  this.preload = function () {
-    const self = this;
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app);
-        return getDocs(collection(db, "pay_gap_by_year"));
-      })
-      .then((querySnapshot) => {
-        self.data = querySnapshot.docs.map((doc) => doc.data());
-        self.loaded = true;
-        console.log("Pay Gap Data loaded:", self.data);
-      })
-      .catch((error) => {
-        console.error("Error loading Pay Gap data:", error);
-      });
-  };
-
-  // SETUP: prepare the data, layout, and UI
-  this.setup = function () {
-    textSize(16);
-    textAlign(CENTER, CENTER);
-
-    if (!this.loaded || !this.data.length) {
-      console.log("PayGapTimeSeries: no data in setup.");
-      return;
+  // Preload
+  this.preload = async function () {
+    try {
+      this.data = await fetchData("pay_gap_by_year");
+      this.loaded = true;
+      console.log("Pay Gap Data loaded");
+    } catch (error) {
+      console.error("Error loading Pay Gap data:", error);
     }
-
-    // Parse and sort data by year
-    this.data.forEach((d) => {
-      d.year = parseFloat(d.year) || 2000;
-      d.pay_gap = parseFloat(d.pay_gap) || 0;
-    });
-    this.data.sort((a, b) => a.year - b.year);
-
-    // Update global range and pay gap min/max from data
-    this.globalStartYear = this.data[0].year;
-    this.globalEndYear = this.data[this.data.length - 1].year;
-    const payGaps = this.data.map((d) => d.pay_gap);
-    this.minPayGap = Math.min(...payGaps);
-    this.maxPayGap = Math.max(...payGaps);
-
-    // Recreate layout in case canvas size has changed
-    this.layout = createLayout(marginSize, width, height, {
-      grid: true,
-      numXTickLabels: 10,
-      numYTickLabels: 8,
-    });
-
-    // Create sliders using helper
-    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
-
-    this.frameCount = 0; // Reset animation frame count
   };
 
-  // DESTROY: remove UI elements
+  /**
+   * Setup: Initialize UI, sort data
+   */
+  this.setup = function () {
+    // Settings for the data range
+    this.globalStartYear = 1997;
+    this.globalEndYear = 2017;
+    this.minPayGap = 0;
+    this.maxPayGap = 30;
+
+    // Create sliders for year range
+    this.sliders = createYearSliders(1997, 2017);
+
+    // For animation
+    this.frameCount = 0;
+  };
+
+  // Destroy visual, clean up UI elements
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
   };
 
-  // DRAW: p5 draw loop for rendering
+  // Draw: Render the line chart
   this.draw = function () {
     if (!this.loaded || !this.data.length) {
-      console.log("PayGapTimeSeries: data not loaded in draw()");
+      console.log("PayGapTimeSeries data not loaded yet.");
       return;
     }
 
@@ -118,7 +84,7 @@ export function PayGapTimeSeries() {
       this.sliders.startSlider.value(endYear - 1);
     }
 
-    // Draw axis, ticks, and labels (assuming you have global functions drawAxis, drawYAxisTickLabels, drawAxisLabels)
+    // Draw y-axis tick labels and axes
     drawYAxisTickLabels(
       this.minPayGap,
       this.maxPayGap,
@@ -129,7 +95,7 @@ export function PayGapTimeSeries() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw X ticks
+    // Draw x ticks using p5 functions
     const numYears = endYear - startYear;
     const xTickSkip = ceil(numYears / this.layout.numXTickLabels);
     for (let yr = startYear; yr <= endYear; yr++) {
@@ -142,6 +108,8 @@ export function PayGapTimeSeries() {
         text(yr, x, this.layout.bottomMargin + 15);
       }
     }
+
+    // Draw average line
     stroke(255);
     strokeWeight(2);
     noFill();
@@ -164,7 +132,6 @@ export function PayGapTimeSeries() {
 
       drawnCount++;
     }
-
     endShape();
 
     this.frameCount++;
@@ -173,7 +140,11 @@ export function PayGapTimeSeries() {
     }
   };
 
-  // Helper: Map a given year to an x-coordinate based on current slider range
+  /**
+   * Helper: Maps a given year to its x-coordinate
+   * @param {number} year - year to map.
+   * @returns {number} - x-coordinate value.
+   */
   this.mapYearToWidth = function (year, startYear, endYear) {
     return map(
       year,
@@ -184,7 +155,11 @@ export function PayGapTimeSeries() {
     );
   };
 
-  // Helper: Map a pay gap value to a y-coordinate
+  /**
+   * Helper: Maps a pay gap value to its corresponding y-coordinate
+   * @param {number} gap - gap value
+   * @returns {number} - y-coordinate value
+   */
   this.mapPayGapToHeight = function (gap) {
     return map(
       gap,
