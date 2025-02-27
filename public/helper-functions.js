@@ -47,10 +47,12 @@ export const createYearSliders = (
   const startSlider = createSlider(minYear, maxYear - 1, minYear, 1);
   startSlider.parent(parentId);
   startSlider.style("width", sliderWidth);
+  startSlider.class("slider");
 
   const endSlider = createSlider(minYear + 1, maxYear, maxYear, 1);
   endSlider.parent(parentId);
   endSlider.style("width", sliderWidth);
+  endSlider.class("slider");
 
   const yearLabel = createP(`Start Year: ${minYear} | End Year: ${maxYear}`);
   yearLabel.parent(parentId);
