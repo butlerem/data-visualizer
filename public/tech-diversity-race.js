@@ -10,6 +10,7 @@ export function TechDiversityRace() {
   self.name = "Tech Race Diversity";
   self.id = "tech-diversity-race";
   self.title = "Tech Diversity by Race";
+  this.collectionName = "tech_diversity_race";
 
   // Firestore docs stored in raceDocs, inverted data in dataByCompany
   self.raceDocs = [];

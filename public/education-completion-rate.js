@@ -14,6 +14,7 @@ export function EducationCompletionRate() {
   this.name = "Education Completion";
   this.id = "education-completion-rate";
   this.title = "Female Primary Education Completion Rate Over Time (by Region)";
+  this.collectionName = "primary_education_completion";
   this.loaded = false;
   this.xAxisLabel = "Year";
   this.yAxisLabel = "% Completion";

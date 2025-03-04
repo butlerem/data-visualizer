@@ -99,6 +99,7 @@ body {
 /* Canvas Elements */
 #canvas {
   background-color: var(--menu-bg);
+  font-size: 10px;
   width: 800px;
   height: 500px;
   box-shadow: 0 0 10px var(--sidebar-bg);

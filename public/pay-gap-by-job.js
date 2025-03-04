@@ -10,6 +10,7 @@ export function PayGapByJob2017() {
   self.name = "Pay Gap By Job";
   self.id = "pay-gap-by-job-2017";
   self.title = "Pay Gap by Job in 2017";
+  this.collectionName = "occupation_pay_gap";
   self.loaded = false;
   self.data = [];
 

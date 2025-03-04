@@ -13,6 +13,7 @@ export function ClimateChange() {
   this.name = "Climate Change";
   this.id = "climate-change";
   this.title = "Climate Change in ℃ Per Year";
+  this.collectionName = "surface_temp";
   this.loaded = false;
   this.xAxisLabel = "Year";
   this.yAxisLabel = "Change in ℃";

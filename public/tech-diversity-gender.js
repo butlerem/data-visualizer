@@ -10,6 +10,7 @@ export function TechDiversityGender() {
   self.name = "Tech Gender Diversity 3D";
   self.id = "tech-diversity-gender-3d";
   self.title = "Tech Diversity by Gender Percentage";
+  this.collectionName = "tech_diversity_gender";
   self.loaded = false;
   self.data = [];
 

@@ -14,6 +14,7 @@ export function PayGapTimeSeries() {
   this.name = "Pay Gap Over Time";
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
+  this.collectionName = "pay_gap_by_year";
   this.loaded = false;
   this.xAxisLabel = "Year";
   this.yAxisLabel = "%";
