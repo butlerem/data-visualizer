@@ -6,7 +6,7 @@ import {
 } from "./helper-functions.js";
 
 export function EducationGenderRadar() {
-  this.name = "Education Gender Radar";
+  this.name = "Education Distribution";
   this.id = "education-gender-radar";
   this.title = "Education Gender Distribution";
   this.collectionName = "education_gender";
@@ -17,14 +17,18 @@ export function EducationGenderRadar() {
   this.femaleValues = [];
 
   // Default year range
-  this.globalStartYear = 1996;
-  this.globalEndYear = 2023;
+  this.StartYear = 1996;
+  this.EndYear = 2023;
 
   this.stats = [
     { icon: "school", value: "60%", label: "Female Participation" },
     { icon: "school", value: "40%", label: "Male Participation" },
-    { icon: "pie_chart", value: "100%", label: "Total Enrollment" },
+    { icon: "pie_chart", value: "92%", label: "Literacy Rate Overall" },
   ];
+
+  // Separate animation progress variables for male and female polygons (0 to 1)
+  this.maleProgress = 0;
+  this.femaleProgress = 0;
 
   this.preload = async function () {
     try {
@@ -42,11 +46,13 @@ export function EducationGenderRadar() {
       return;
     }
     textSize(16);
-    textAlign(CENTER, CENTER);
-
-    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
+    this.sliders = createYearSliders(this.StartYear, this.EndYear);
     this.frameCount = 0;
     this.filterData();
+
+    // Reset animation progress on setup
+    this.maleProgress = 0;
+    this.femaleProgress = 0;
   };
 
   this.destroy = function () {
@@ -96,10 +102,9 @@ export function EducationGenderRadar() {
       console.log("Education Gender data not loaded yet.");
       return;
     }
-
-    if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
-      this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
-    }
+    textFont("DM Sans");
+    textSize(14);
+    textStyle(NORMAL);
 
     this.startYear = parseInt(this.sliders.startSlider.value());
     this.endYear = parseInt(this.sliders.endSlider.value());
@@ -109,7 +114,19 @@ export function EducationGenderRadar() {
     if (n === 0) return;
     let angleStep = TWO_PI / n;
 
-    // Draw radar chart grid
+    // Update maleProgress until fully animated
+    if (this.maleProgress < 1) {
+      this.maleProgress += 0.02;
+      if (this.maleProgress > 1) this.maleProgress = 1;
+    } else {
+      // Once male animation is complete, animate female polygon
+      if (this.femaleProgress < 1) {
+        this.femaleProgress += 0.02;
+        if (this.femaleProgress > 1) this.femaleProgress = 1;
+      }
+    }
+
+    // Draw radar chart grid (static background)
     stroke(150);
     noFill();
     for (let r = 0.2; r <= 1; r += 0.2) {
@@ -124,8 +141,9 @@ export function EducationGenderRadar() {
     }
 
     // Draw category labels
-    fill(255);
-    textAlign(CENTER, CENTER);
+    textAlign(CENTER);
+    textSize(12);
+    textStyle(NORMAL);
     for (let i = 0; i < n; i++) {
       let angle = i * angleStep - PI / 2;
       let x = width / 2 + cos(angle) * 220;
@@ -133,25 +151,27 @@ export function EducationGenderRadar() {
       text(this.categories[i], x, y);
     }
 
-    // Draw male data polygon (filled with transparency)
+    // Draw male data polygon with animation
     fill(132, 215, 217, 100);
     stroke(132, 215, 217);
     beginShape();
     for (let i = 0; i < n; i++) {
       let val = this.maleValues[i];
-      let r = map(val, 0, 100, 0, 200);
+      // Map value to radius, then apply male animation progress
+      let r = map(val, 0, 100, 0, 200) * this.maleProgress;
       let angle = i * angleStep - PI / 2;
       vertex(width / 2 + cos(angle) * r, height / 2 + sin(angle) * r);
     }
     endShape(CLOSE);
 
-    // Draw female data polygon (filled with transparency)
-    fill(171, 82, 213, 100);
-    stroke(171, 82, 213);
+    // Draw female data polygon with animation (starts only after male is complete)
+    fill(170, 80, 210, 100);
+    stroke(170, 80, 210);
     beginShape();
     for (let i = 0; i < n; i++) {
       let val = this.femaleValues[i];
-      let r = map(val, 0, 100, 0, 200);
+      // Map value to radius, then apply female animation progress
+      let r = map(val, 0, 100, 0, 200) * this.femaleProgress;
       let angle = i * angleStep - PI / 2;
       vertex(width / 2 + cos(angle) * r, height / 2 + sin(angle) * r);
     }

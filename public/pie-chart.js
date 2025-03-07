@@ -3,9 +3,8 @@ import { sum } from "./helper-functions.js";
 // --------------------------------------------------------------------
 // PieChart.js - 2D Pie Chart Class
 // --------------------------------------------------------------------
-// NOTE: This file is not currently used in the project because we are
-// using a 3D Pie Chart instead. However, it is being kept for potential
-// future use in case a 2D pie chart is needed again. :)
+// NOTE: This file is not currently used because we are using a 3D Pie
+// Chart instead. :)
 // --------------------------------------------------------------------
 
 /**

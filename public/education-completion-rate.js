@@ -3,6 +3,7 @@ import {
   createYearSliders,
   removeYearSliders,
   drawYAxisTickLabels,
+  drawXAxisTickLabels,
   drawAxis,
   drawAxisLabels,
   fetchData,
@@ -27,14 +28,22 @@ export function EducationCompletionRate() {
   this.regionColors = {};
 
   // Default year range
-  this.globalStartYear = 1990;
-  this.globalEndYear = 2022;
+  this.StartYear = 1990;
+  this.EndYear = 2022;
 
   // Statistics for stats panel
   this.stats = [
-    { icon: "trending_up", value: "90%", label: "Completion Rate" },
-    { icon: "pie_chart", value: "50%", label: "Female Share" },
-    { icon: "pie_chart", value: "50%", label: "Male Share" },
+    {
+      icon: "trending_up",
+      value: "90%",
+      label: "Average Completion Rate in 2022",
+    },
+    { icon: "pie_chart", value: "2%", label: "Average Rate Increase Per Year" },
+    {
+      icon: "pie_chart",
+      value: "30%",
+      label: "Countries With < 70% Completion Rate",
+    },
   ];
 
   // p5 layout settings
@@ -65,7 +74,6 @@ export function EducationCompletionRate() {
       return;
     }
     textSize(16);
-    textAlign(CENTER, CENTER);
 
     // Group rawData by region and year
     const regionYearValues = {};
@@ -73,11 +81,7 @@ export function EducationCompletionRate() {
       const region = row["Region"];
       if (!region) continue;
       if (!regionYearValues[region]) regionYearValues[region] = {};
-      for (
-        let year = this.globalStartYear;
-        year <= this.globalEndYear;
-        year++
-      ) {
+      for (let year = this.StartYear; year <= this.EndYear; year++) {
         const strYear = year.toString();
         const val = row[strYear];
         if (val !== undefined && val !== "") {
@@ -93,11 +97,7 @@ export function EducationCompletionRate() {
     // Compute average rate for each region and year
     for (let region in regionYearValues) {
       this.data[region] = [];
-      for (
-        let year = this.globalStartYear;
-        year <= this.globalEndYear;
-        year++
-      ) {
+      for (let year = this.StartYear; year <= this.EndYear; year++) {
         const arr = regionYearValues[region][year];
         if (arr && arr.length > 0) {
           const avg = arr.reduce((acc, val) => acc + val, 0) / arr.length;
@@ -133,13 +133,13 @@ export function EducationCompletionRate() {
     }
 
     // Create sliders for year range
-    this.sliders = createYearSliders(this.globalStartYear, this.globalEndYear);
+    this.sliders = createYearSliders(this.StartYear, this.EndYear);
 
     // Reset animation frame count
     this.frameCount = 0;
   };
 
-  // Destroy visual, clean up UI elements
+  // Destroy visual, clean up UI
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
     hideElement("education-visualization");
@@ -151,11 +151,9 @@ export function EducationCompletionRate() {
       console.log("Education Completion data not loaded yet.");
       return;
     }
-
-    // Ensure slider values are valid (start less than end)
-    if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
-      this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
-    }
+    textFont("DM Sans");
+    textSize(14);
+    textStyle(NORMAL);
 
     // Update year range based on slider values
     this.startYear = parseInt(this.sliders.startSlider.value());
@@ -173,16 +171,11 @@ export function EducationCompletionRate() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw the x tick labels
-    const xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    for (let yr = this.startYear; yr <= this.endYear; yr++) {
-      if ((yr - this.startYear) % xTickSkip === 0) {
-        const x = this.mapYearToWidth(yr);
-        stroke(150);
-        line(x, this.layout.topMargin, x, this.layout.bottomMargin);
-        noStroke();
-        fill(255);
-        text(yr, x, this.layout.bottomMargin + 15);
+    // Draw X-axis tick labels
+    const xTickSkip = Math.ceil(numYears / this.layout.numXTickLabels);
+    for (let year = this.startYear; year <= this.endYear; year++) {
+      if ((year - this.startYear) % xTickSkip === 0) {
+        drawXAxisTickLabels(year, this.layout, this.mapYearToWidth.bind(this));
       }
     }
 
@@ -195,7 +188,7 @@ export function EducationCompletionRate() {
       if (regionData.length < 2) continue;
 
       stroke(this.regionColors[region] || color(255, 0, 0));
-      strokeWeight(2);
+      strokeWeight(1);
       noFill();
 
       beginShape();

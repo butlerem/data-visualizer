@@ -3,6 +3,7 @@ import {
   createYearSliders,
   removeYearSliders,
   drawYAxisTickLabels,
+  drawXAxisTickLabels,
   drawAxis,
   drawAxisLabels,
   fetchData,
@@ -11,7 +12,7 @@ import {
 export function PayGapTimeSeries() {
   // Public properties
   const self = this;
-  this.name = "Pay Gap Over Time";
+  this.name = "Gender Pay Gap";
   this.id = "pay-gap-timeseries";
   this.title = "Percent Difference Between Male and Female Pay Per Year";
   this.collectionName = "pay_gap_by_year";
@@ -27,15 +28,12 @@ export function PayGapTimeSeries() {
     { icon: "timeline", value: "15%", label: "Average Gap" },
   ];
 
-  // p5 layout: using a marginSize of 35. (Assuming global variables width and height from p5.)
   const marginSize = 35;
   this.layout = createLayout(marginSize, width, height, {
     grid: true,
     numXTickLabels: 10,
     numYTickLabels: 8,
   });
-  textSize(16);
-  textAlign(CENTER, CENTER);
 
   // Preload
   this.preload = async function () {
@@ -53,9 +51,9 @@ export function PayGapTimeSeries() {
    */
   this.setup = function () {
     // Settings for the data range
-    this.globalStartYear = 1997;
-    this.globalEndYear = 2017;
-    this.minPayGap = 0;
+    this.StartYear = 1997;
+    this.EndYear = 2017;
+    this.minPayGap = 15;
     this.maxPayGap = 30;
 
     // Create sliders for year range
@@ -65,7 +63,7 @@ export function PayGapTimeSeries() {
     this.frameCount = 0;
   };
 
-  // Destroy visual, clean up UI elements
+  // Destroy visual, clean up UI
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
   };
@@ -76,14 +74,14 @@ export function PayGapTimeSeries() {
       console.log("PayGapTimeSeries data not loaded yet.");
       return;
     }
+    textFont("DM Sans");
+    textSize(14);
+    textStyle(NORMAL);
 
-    const startYear = parseInt(this.sliders.startSlider.value());
-    const endYear = parseInt(this.sliders.endSlider.value());
-
-    // Ensure valid year range
-    if (startYear >= endYear) {
-      this.sliders.startSlider.value(endYear - 1);
-    }
+    // Update year range based on slider values
+    this.startYear = parseInt(this.sliders.startSlider.value());
+    this.endYear = parseInt(this.sliders.endSlider.value());
+    const numYears = this.endYear - this.startYear;
 
     // Draw y-axis tick labels and axes
     drawYAxisTickLabels(
@@ -96,48 +94,46 @@ export function PayGapTimeSeries() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
-    // Draw x ticks using p5 functions
-    const numYears = endYear - startYear;
-    const xTickSkip = ceil(numYears / this.layout.numXTickLabels);
-    for (let yr = startYear; yr <= endYear; yr++) {
-      if ((yr - startYear) % xTickSkip === 0) {
-        const x = this.mapYearToWidth(yr, startYear, endYear);
-        stroke(150);
-        line(x, this.layout.topMargin, x, this.layout.bottomMargin);
-        noStroke();
-        fill(255);
-        text(yr, x, this.layout.bottomMargin + 15);
+    const xTickSkip = Math.ceil(numYears / this.layout.numXTickLabels);
+    for (let year = this.startYear; year <= this.endYear; year++) {
+      if ((year - this.startYear) % xTickSkip === 0) {
+        drawXAxisTickLabels(year, this.layout, this.mapYearToWidth.bind(this));
       }
     }
 
-    // Draw average line
     stroke(255);
-    strokeWeight(2);
+    strokeWeight(1);
     noFill();
     beginShape();
 
-    let drawnCount = 0;
-    const filteredData = this.data.filter(
-      (d) => d.year >= startYear && d.year <= endYear
-    );
-    const maxFrames = filteredData.length;
+    let previous = null;
+    let segmentsDrawn = 0;
 
-    for (let i = 0; i < filteredData.length; i++) {
-      const d = filteredData[i];
-      if (drawnCount >= this.frameCount) break;
-
-      vertex(
-        this.mapYearToWidth(d.year, startYear, endYear),
-        this.mapPayGapToHeight(d.pay_gap)
-      );
-
-      drawnCount++;
+    for (let i = 0; i < this.data.length; i++) {
+      const current = this.data[i];
+      if (
+        previous &&
+        current.year >= this.startYear &&
+        current.year <= this.endYear
+      ) {
+        if (segmentsDrawn < this.frameCount) {
+          stroke(200);
+          line(
+            this.mapYearToWidth(previous.year),
+            this.mapPayGapToHeight(previous.pay_gap),
+            this.mapYearToWidth(current.year),
+            this.mapPayGapToHeight(current.pay_gap)
+          );
+          segmentsDrawn++;
+        }
+      }
+      previous = current;
     }
-    endShape();
 
-    this.frameCount++;
-    if (this.frameCount > maxFrames) {
-      this.frameCount = maxFrames;
+    // Increase frame count to animate progressively
+    this.frameCount += 0.5;
+    if (this.frameCount >= numYears) {
+      this.frameCount = numYears;
     }
   };
 
@@ -146,11 +142,11 @@ export function PayGapTimeSeries() {
    * @param {number} year - year to map.
    * @returns {number} - x-coordinate value.
    */
-  this.mapYearToWidth = function (year, startYear, endYear) {
+  this.mapYearToWidth = function (year) {
     return map(
       year,
-      startYear,
-      endYear,
+      this.startYear,
+      this.endYear,
       this.layout.leftMargin,
       this.layout.rightMargin
     );

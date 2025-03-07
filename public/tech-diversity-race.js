@@ -18,9 +18,9 @@ export function TechDiversityRace() {
   self.loaded = false;
 
   self.stats = [
-    { icon: "groups", value: "50%", label: "White Representation" },
-    { icon: "groups", value: "25%", label: "Black Representation" },
-    { icon: "groups", value: "25%", label: "Other Representation" },
+    { icon: "groups", value: "52%", label: "Average White Representation" },
+    { icon: "groups", value: "7%", label: "Average Black Representation" },
+    { icon: "groups", value: "3%", label: "Average Other Representation" },
   ];
 
   // Three.js variables
@@ -174,11 +174,11 @@ export function TechDiversityRace() {
    */
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("#3A3E44");
+    scene.background = new THREE.Color("#ffffff");
 
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
     // Position camera for a good view of the legend
-    camera.position.set(6, 12, 10);
+    camera.position.set(2, 10, 10);
     // Make camera look at the legend (adjust values as needed)
     camera.lookAt(new THREE.Vector3(8, 7, 7));
 
@@ -286,7 +286,7 @@ export function TechDiversityRace() {
             size: 0.3,
             height: 0.05,
           });
-          const textMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          const textMat = new THREE.MeshBasicMaterial({ color: 0xa9b5c6 });
           const textMesh = new THREE.Mesh(textGeom, textMat);
           // Position text to the right of the swatch
           textMesh.position.set(0.6, -i * legendSpacing - 0.2, 0);

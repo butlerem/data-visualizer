@@ -3,6 +3,7 @@ import {
   createYearSliders,
   removeYearSliders,
   drawYAxisTickLabels,
+  drawXAxisTickLabels,
   drawAxis,
   drawAxisLabels,
   fetchData,
@@ -40,7 +41,6 @@ export function ClimateChange() {
     numYTickLabels: 8,
   });
   textSize(16);
-  textAlign(CENTER, CENTER);
 
   // Preload data
   this.preload = async function () {
@@ -78,7 +78,7 @@ export function ClimateChange() {
     this.frameCount = 0;
   };
 
-  // Destroy visual, clean up UI elements
+  // Destroy visual, clean up UI
   this.destroy = function () {
     if (this.sliders) removeYearSliders(this.sliders);
   };
@@ -88,11 +88,6 @@ export function ClimateChange() {
     if (!this.loaded) {
       console.log("Climate data not loaded yet.");
       return;
-    }
-
-    // Ensure slider values are valid (start less than end)
-    if (this.sliders.startSlider.value() >= this.sliders.endSlider.value()) {
-      this.sliders.startSlider.value(this.sliders.endSlider.value() - 1);
     }
 
     // Update year range based on slider values
@@ -111,8 +106,16 @@ export function ClimateChange() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
 
+    // Draw X-axis tick labels
+    const xTickSkip = Math.ceil(numYears / this.layout.numXTickLabels);
+    for (let year = this.startYear; year <= this.endYear; year++) {
+      if ((year - this.startYear) % xTickSkip === 0) {
+        drawXAxisTickLabels(year, this.layout, this.mapYearToWidth.bind(this));
+      }
+    }
+
     // Draw mean temperature line
-    stroke(200);
+    stroke(150);
     strokeWeight(1);
     line(
       this.layout.leftMargin,
@@ -122,8 +125,7 @@ export function ClimateChange() {
     );
 
     // Draw each segment of the data with animation
-    const segmentWidth =
-      this.layout.plotWidth() / (this.endYear - this.startYear);
+    const segmentWidth = this.layout.plotWidth() / numYears;
     let previous = null;
     let segmentsDrawn = 0;
 
@@ -144,8 +146,9 @@ export function ClimateChange() {
             segmentWidth,
             this.layout.plotHeight()
           );
+
           // Draw connecting line between data points
-          stroke(200);
+          stroke(150);
           line(
             this.mapYearToWidth(previous.year),
             this.mapTemperatureToHeight(previous.temperature),

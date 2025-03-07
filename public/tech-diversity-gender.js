@@ -7,7 +7,7 @@ import { fetchData } from "./helper-functions.js";
 export function TechDiversityGender() {
   // Public properties
   const self = this;
-  self.name = "Tech Gender Diversity 3D";
+  self.name = "Tech Gender Diversity";
   self.id = "tech-diversity-gender-3d";
   self.title = "Tech Diversity by Gender Percentage";
   this.collectionName = "tech_diversity_gender";
@@ -16,9 +16,9 @@ export function TechDiversityGender() {
 
   // Stats to be displayed in the stats panel
   self.stats = [
-    { icon: "female", value: "30%", label: "Female Representation" },
-    { icon: "male", value: "70%", label: "Male Representation" },
-    { icon: "groups", value: "85%", label: "Overall Diversity Index" },
+    { icon: "female", value: "23%", label: "Average Female Representation" },
+    { icon: "male", value: "77%", label: "Average Male Representation" },
+    { icon: "groups", value: "49%", label: "Highest Female Representation" },
   ];
 
   // Three.js variables
@@ -36,14 +36,9 @@ export function TechDiversityGender() {
 
   // Preload data from Firestore
   this.preload = function () {
-    import("https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js")
-      .then(({ getFirestore, collection, getDocs }) => {
-        const db = getFirestore(window.app); // Ensure window.app is your Firebase app
-        return getDocs(collection(db, "tech_diversity_gender"));
-      })
-      .then((querySnapshot) => {
-        // Convert docs to a JS array
-        self.data = querySnapshot.docs.map((doc) => doc.data());
+    fetchData("tech_diversity_gender")
+      .then((data) => {
+        self.data = data;
         self.loaded = true;
         console.log("Tech Diversity Gender data loaded");
       })
@@ -89,26 +84,21 @@ export function TechDiversityGender() {
     if (threeCanvasDiv) {
       threeCanvasDiv.style.display = "none";
     }
+    renderer.domElement.parentNode.removeChild(renderer.domElement);
     // Show p5 canvas
     const p5CanvasDiv = document.getElementById("canvas");
     if (p5CanvasDiv) {
       p5CanvasDiv.style.display = "block";
-    }
-    // Remove Three.js canvas from DOM
-    if (renderer && renderer.domElement && renderer.domElement.parentNode) {
-      renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
 
   // Initialize Three.js scene, camera, render, lights, grid, controls
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("#3A3E44");
-
+    scene.background = new THREE.Color("0xfff");
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    camera.position.set(-25, 10, 0);
+    camera.position.set(-20, 10, 0);
     camera.lookAt(0, 0, 0);
-
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
 
@@ -117,22 +107,27 @@ export function TechDiversityGender() {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
-    // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Add light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    // Add directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
+    /* Add a grid helper - Not needed right now for this chart
+
     // Compute grid size from data length
     let numCompanies = self.data.length;
-    let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2; // Add some padding
+    let gridSize = (numCompanies - 1) * gapBetweenCompanies + 2;
 
-    // Add a grid helper
-    const gridHelper = new THREE.GridHelper(gridSize, numCompanies);
-    scene.add(gridHelper);
+    const gridHelper = new THREE.GridHelper(
+      gridSize,
+      numCompanies,
+      0xa9b5c6,
+      0xa9b5c6
+    );
+    scene.add(gridHelper); */
 
     // Group to hold bars
     barsGroup = new THREE.Group();
@@ -141,15 +136,12 @@ export function TechDiversityGender() {
     // Set up orbit controls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.1;
-
-    window.addEventListener("resize", onWindowResize);
   }
 
   // Create bars for each company data
   function createBars() {
     let numCompanies = self.data.length;
-    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2; // Center the bars
+    let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2;
 
     for (let i = 0; i < numCompanies; i++) {
       const doc = self.data[i];
@@ -162,10 +154,10 @@ export function TechDiversityGender() {
 
       // Female bar
       let femaleHeight = femaleVal * scaleFactor;
-      let femaleGeom = new THREE.BoxGeometry(barWidth, femaleHeight, barDepth);
+      let femaleGeo = new THREE.BoxGeometry(barWidth, femaleHeight, barDepth);
       let femaleMat = new THREE.MeshStandardMaterial({ color: femaleColor });
-      let femaleBar = new THREE.Mesh(femaleGeom, femaleMat);
-      femaleBar.position.y = femaleHeight / 2; // Center vertically
+      let femaleBar = new THREE.Mesh(femaleGeo, femaleMat);
+      femaleBar.position.y = femaleHeight / 2;
       femaleBar.position.x = -(barWidth / 2 + gapBetweenBars / 2);
       companyGroup.add(femaleBar);
 
@@ -174,7 +166,7 @@ export function TechDiversityGender() {
       let maleGeom = new THREE.BoxGeometry(barWidth, maleHeight, barDepth);
       let maleMat = new THREE.MeshStandardMaterial({ color: maleColor });
       let maleBar = new THREE.Mesh(maleGeom, maleMat);
-      maleBar.position.y = maleHeight / 2; // Center vertically
+      maleBar.position.y = maleHeight / 2;
       maleBar.position.x = barWidth / 2 + gapBetweenBars / 2;
       companyGroup.add(maleBar);
 
@@ -191,7 +183,7 @@ export function TechDiversityGender() {
     loader.load(
       "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
       function (font) {
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xa9b5c6 });
 
         // Y-axis label
         const yAxisLabelGeo = new TextGeometry("Male and Female (%)", {
@@ -217,15 +209,16 @@ export function TechDiversityGender() {
 
         addCompanyLabels(font);
         addYAxisTicks(font);
-        // TODO add legend for color coding and other cues
+
+        // TODO -- add a legend for color coding
       }
     );
   }
 
   // Add Y-axis tick marks and labels
   function addYAxisTicks(font) {
-    const tickMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const tickMaterial = new THREE.LineBasicMaterial({ color: 0xa9b5c6 });
+    const tickTextMaterial = new THREE.MeshBasicMaterial({ color: 0xa9b5c6 });
 
     const maxPercentage = 100;
     const numTicks = 5; // e.g. 0%, 20%, 40%, 60%, 80%, 100%
@@ -256,9 +249,9 @@ export function TechDiversityGender() {
     }
   }
 
-  // Add company labels near the bars
+  // Add company labels
   function addCompanyLabels(font) {
-    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const textMaterial = new THREE.MeshBasicMaterial({ color: 0xa9b5c6 });
     let numCompanies = self.data.length;
     let offsetZ = ((numCompanies - 1) * gapBetweenCompanies) / 2;
 
@@ -266,18 +259,17 @@ export function TechDiversityGender() {
       let companyName = self.data[i].company || "Unknown";
       const labelGeometry = new TextGeometry(companyName, {
         font: font,
-        size: 0.5,
-        height: 0.05,
+        size: 0.6,
+        height: 0.06,
       });
       const label = new THREE.Mesh(labelGeometry, textMaterial);
-      // Position the label near the company's bars
       label.position.set(0, -1, -i * gapBetweenCompanies + offsetZ);
       label.rotation.set(0, (3 * Math.PI) / 2, -Math.PI / 2);
       scene.add(label);
     }
   }
 
-  // Animation loop to update controls and render the scene
+  // Update controls and render the scene
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
@@ -286,26 +278,18 @@ export function TechDiversityGender() {
     }
   }
 
-  // Adjust camera and renderer on window resize
-  function onWindowResize() {
-    camera.aspect = getAspect();
-    camera.updateProjectionMatrix();
-    renderer.setSize(getWidth(), getHeight());
-  }
-
-  // Helper function to get container width
+  // Get container width and height
   function getWidth() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientWidth : window.innerWidth;
   }
 
-  // Helper function to get container height
   function getHeight() {
     const el = document.getElementById("three-canvas");
     return el ? el.clientHeight : window.innerHeight;
   }
 
-  // Helper function to compute aspect ratio
+  // Compute aspect ratio
   function getAspect() {
     return getWidth() / getHeight();
   }

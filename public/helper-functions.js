@@ -3,11 +3,11 @@ import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 
 // --------------------------------------------------------------------
-// Helper Functions for Layout, UI, and Three.js Setup
+// Layout and Setup
 // --------------------------------------------------------------------
 
 /**
- * Creates a layout configuration for graph plotting.
+ * Creates a layout configuration for graphs.
  */
 export const createLayout = (
   marginSize,
@@ -125,7 +125,7 @@ export const sliceRowNumbers = (row, start = 0, end) => {
 // --------------------------------------------------------------------
 
 /**
- * Draws the x-axis and y-axis on the canvas.
+ * Draws x and y axis.
  */
 export const drawAxis = (layout, colour = 0) => {
   stroke(color(colour));
@@ -153,7 +153,6 @@ export const drawAxis = (layout, colour = 0) => {
 export const drawAxisLabels = (xLabel, yLabel, layout) => {
   fill(255);
   noStroke();
-  textAlign(CENTER, CENTER);
 
   // x-axis label
   text(
@@ -169,6 +168,8 @@ export const drawAxisLabels = (xLabel, yLabel, layout) => {
     layout.topMargin + layout.plotHeight() / 2
   );
   rotate(-PI / 2);
+  noStroke(); // Ensure no stroke for rotated text
+  fill(255);
   text(yLabel, 0, 0);
   pop();
 };
@@ -185,7 +186,7 @@ export const drawYAxisTickLabels = (
 ) => {
   const range = max - min;
   const yTickStep = range / layout.numYTickLabels;
-  fill(255);
+  fill(150);
   noStroke();
   textAlign(RIGHT, CENTER);
 
@@ -203,11 +204,10 @@ export const drawYAxisTickLabels = (
 /**
  * Draws x-axis tick labels.
  */
-export const drawXAxisTickLabel = (value, layout, mapFunction) => {
+export const drawXAxisTickLabels = (value, layout, mapFunction) => {
   const x = mapFunction(value);
-  fill(255);
+  fill(150);
   noStroke();
-  textAlign(CENTER, CENTER);
   text(value, x, layout.bottomMargin + layout.marginSize / 2);
   if (layout.grid) {
     stroke(220);
@@ -215,22 +215,12 @@ export const drawXAxisTickLabel = (value, layout, mapFunction) => {
   }
 };
 
-/**
- * Draws a title at the top of the visualization.
- */
-export const drawTitle = (txt, margin = 40) => {
-  fill(255);
-  noStroke();
-  textSize(16);
-  text(txt, width / 2, margin / 2);
-};
-
 // --------------------------------------------------------------------
 // DOM Utilities
 // --------------------------------------------------------------------
 
 /**
- * Displays an HTML element by ID.
+ * Display an HTML element
  */
 export const showElement = (id) => {
   const el = document.getElementById(id);
@@ -240,7 +230,7 @@ export const showElement = (id) => {
 };
 
 /**
- * Hides an HTML element by ID.
+ * Hide an HTML element
  */
 export const hideElement = (id) => {
   const el = document.getElementById(id);
@@ -250,18 +240,8 @@ export const hideElement = (id) => {
 };
 
 // --------------------------------------------------------------------
-// Three.js Helpers
+// Three.js
 // --------------------------------------------------------------------
-
-/**
- * Retrieves the dimensions of the Three.js canvas.
- */
-export function getThreeCanvasDimensions() {
-  const el = document.getElementById("three-canvas");
-  const width = el ? el.clientWidth : window.innerWidth;
-  const height = el ? el.clientHeight : window.innerHeight;
-  return { width, height, aspect: width / height };
-}
 
 /**
  * Fetches data from Firestore.
@@ -274,7 +254,7 @@ export const fetchData = async (collectionName) => {
     );
     const db = getFirestore(window.app);
     const querySnapshot = await getDocs(collection(db, collectionName));
-    // Return each doc's id as "race" along with its data
+    // Return each id as "race" with its data
     return querySnapshot.docs.map((doc) => ({ race: doc.id, ...doc.data() }));
   } catch (error) {
     console.error(`Error loading data from ${collectionName}:`, error);
@@ -283,7 +263,7 @@ export const fetchData = async (collectionName) => {
 };
 
 /**
- * Creates a 3D text mesh in Three.js.
+ * Creates mesh for an
  */
 export function createTextMesh(text, options, onLoad) {
   const loader = new FontLoader();

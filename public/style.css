@@ -1,120 +1,160 @@
+@import url("https://fonts.googleapis.com/css?family=DM+Sans:400,500,700&display=swap");
+
 :root {
-  --font-family: "Inter", sans-serif;
-  --base-font-size: small;
+  font-family: "DM Sans", sans-serif;
+  box-sizing: border-box;
+  font-size: medium;
+  --border-radius: 10px;
+  --box-shadow: 0 0 5px #afb7c1;
+  --primary-text: #3b4454;
   --primary-color: #fff;
-  --muted-color: #a0aec0;
-  --accent-color: #84d7d9;
-  --body-bg: #232529;
-  --sidebar-bg: #2e3136;
-  --menu-bg: #3a3e44;
-  --stats-bg: #2a2d31;
-  --download-color: #ab52d5;
+  --secondary-color: #f2f5f7;
+  --muted-color: #818a96;
+  --accent-color: #4fd1c5;
+  --accent-color-muted: #a0d1ca;
+  --button-color: #5ca2ff;
 }
 
-/* Base Styles */
-body {
-  font-family: var(--font-family);
-  font-size: var(--base-font-size);
-  color: var(--primary-color);
-  background-color: var(--body-bg);
-  margin: 0;
-  padding: 0;
-}
-
-/* Layout Container */
 .container {
-  display: flex;
-}
-
-/* SIDEBAR */
-#sidebar {
-  background-color: var(--sidebar-bg);
-  padding: 0;
-  width: 15%;
-  min-width: 260px;
-  max-width: 320px;
-  flex-shrink: 0;
-}
-
-/* Menu Title */
-#menu-title {
-  background-color: var(--menu-bg);
-  height: 55px;
-  padding: 20px;
-  text-align: left;
-}
-
-#menu-title h2 {
-  font-size: 18px;
+  min-height: 100vh;
   color: var(--primary-color);
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: center;
+  transition: 0.2s;
 }
 
-/* Visuals Menu */
+h2 {
+  font-size: large;
+  color: var(--primary-text);
+}
+
+#sidebar {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  height: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 10px;
+  padding: 20px;
+  gap: 15px;
+  transition: 0.3s;
+}
+
+#menu-title {
+  height: 55px;
+  margin-left: 20px;
+}
+
 #visuals-menu {
   list-style: none;
-  padding: 15px;
+  padding: 0;
   margin: 0;
-  height: 100vh;
+  width: 100%;
 }
 
 #visuals-menu li {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 10px;
   color: var(--muted-color);
-  padding: 20px 5px;
   cursor: pointer;
   transition: color 0.3s ease;
 }
 
-#visuals-menu li:hover,
 #visuals-menu li.selected {
+  color: var(--primary-text);
+}
+
+#visuals-menu .material-icons {
+  color: var(--primary-color);
+  background-color: var(--accent-color-muted);
+  border-radius: 30%;
+  font-size: 20px;
+  padding: 8px;
+  text-align: center;
+  margin: 0;
+}
+
+#visuals-menu li.selected .material-icons {
+  color: var(--primary-color);
+  background-color: var(--accent-color);
+}
+
+#download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 15px;
+  background-color: var(--menu-bg);
+  color: var(--muted-color);
+  font-size: medium;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease, background-color 0.3s ease;
+  margin-top: auto; /* Pushes the button to the bottom */
+}
+
+#download i {
+  font-size: 20px;
+  padding: 8px;
+}
+
+#download:hover {
   color: var(--accent-color);
   background-color: var(--menu-bg);
 }
 
-/* MAIN CONTENT */
+/* ----------------------------------------------- */
+
 #main {
-  flex: 1;
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
   padding: 20px;
+  gap: 20px;
 }
 
 #visual-title {
-  margin-bottom: 35px;
-  min-height: 30px; /* Reserve space even when empty */
-  visibility: hidden; /* Hide content until needed */
+  height: 70px;
+  line-height: 70px;
 }
 
-/* Canvas Wrapper */
 .canvas-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  margin-right: 20px;
   height: auto;
 }
 
-/* Canvas Elements */
-#canvas {
-  background-color: var(--menu-bg);
-  font-size: 10px;
-  width: 800px;
-  height: 500px;
-  box-shadow: 0 0 10px var(--sidebar-bg);
-}
-#three-canvas {
-  background-color: var(--menu-bg);
-  width: 800px;
-  height: 500px;
-  box-shadow: 0 0 10px var(--sidebar-bg);
-  display: none; /* Hide the canvas by default */
+canvas {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  color: var(--muted-color);
 }
 
-/* Slider Section */
+#three-canvas {
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  width: 800px;
+  height: 500px;
+  display: none; /* Hiding the canvas by default */
+}
+
 #sliders {
-  background-color: var(--stats-bg);
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   color: var(--muted-color);
   width: 100%;
   max-width: 800px;
@@ -126,19 +166,16 @@ body {
 
 .slider {
   width: 80%;
-  color: var(--accent-color);
   accent-color: var(--accent-color);
 }
 
-/* Company Dropdown */
 #company-dropdown {
   width: 80%;
-  background-color: var(--menu-bg);
+  background-color: var(--secondary-color);
   color: var(--muted-color);
   border: 1px solid var(--menu-bg);
   padding: 8px;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--border-radius);
   font-family: sans-serif;
   margin: 0 auto;
   display: block;
@@ -154,23 +191,28 @@ body {
   color: var(--muted-color);
 }
 
-/* STATS PANEL */
+/* ----------------------------------------------- */
+
 #stats-panel {
-  background-color: var(--stats-bg);
-  width: 20%;
-  min-width: 170px;
-  max-width: 350px;
-  height: 595px;
-  margin-top: 72px;
-  margin-right: 300px;
+  background-color: var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  min-width: 100px;
+  max-width: 250px;
+  height: 600px;
   display: flex;
   flex-direction: column;
+  margin-top: 100px;
   gap: 15px;
   padding: 20px;
+  transition: width 0.3s ease, opacity 0.3s ease;
+  overflow: auto;
+  align-self: flex-start;
+  flex-shrink: 1;
 }
 
 .stat {
-  flex: 1; /* Each .stat will grow equally to fill the panel */
+  flex: 1;
   background-color: var(--menu-bg);
   padding: 15px;
   text-align: center;
@@ -178,45 +220,11 @@ body {
 }
 
 .stat h2 {
-  font-size: 22px;
   color: var(--accent-color);
   margin: 5px 0 0;
 }
 
 .stat p {
-  font-size: 14px;
+  font-size: small;
   margin-top: 50px;
-}
-/* Download Button - same style as list items */
-#download {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 20px 5px; /* Same padding as list items */
-  background-color: var(--menu-bg);
-  color: var(--muted-color); /* Default text color matching list items */
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: color 0.3s ease, background-color 0.3s ease;
-}
-
-#download:hover {
-  color: var(--accent-color); /* Hover text color matching list items */
-  background-color: var(--menu-bg); /* Hover background same as list items */
-}
-
-/* Existing child element styling can remain */
-.material-icons {
-  font-size: 22px;
-  line-height: 1;
-  vertical-align: middle;
-  position: relative;
-  bottom: 2px;
-  margin-right: 15px;
-}
-
-#download p {
-  margin: 0;
 }

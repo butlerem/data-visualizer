@@ -7,7 +7,7 @@ import { fetchData, showElement, hideElement } from "./helper-functions.js";
 export function PayGapByJob2017() {
   // Public properties
   const self = this;
-  self.name = "Pay Gap By Job";
+  self.name = "Occupation Pay Gap";
   self.id = "pay-gap-by-job-2017";
   self.title = "Pay Gap by Job in 2017";
   this.collectionName = "occupation_pay_gap";
@@ -89,10 +89,10 @@ export function PayGapByJob2017() {
    */
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("#3A3E44");
+    scene.background = new THREE.Color("#ffffff");
 
     camera = new THREE.PerspectiveCamera(55, getAspect(), 0.1, 1000);
-    camera.position.set(0, 30, 50);
+    camera.position.set(0, 20, 50);
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -110,7 +110,7 @@ export function PayGapByJob2017() {
     scene.add(directionalLight);
 
     // Grid for reference
-    const gridHelper = new THREE.GridHelper(40, 20);
+    const gridHelper = new THREE.GridHelper(40, 20, 0xa9b5c6, 0xa9b5c6);
     scene.add(gridHelper);
 
     // Group to hold the bubble meshes
@@ -165,7 +165,7 @@ export function PayGapByJob2017() {
     loader.load(
       "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
       function (font) {
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xa9b5c6 });
         const labels = [
           {
             text: "Proportion Female (%)",

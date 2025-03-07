@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Case study 2: Data visualisation</title>
 
-    <!-- Import maps for modules -->
+    <!-- External Library Imports -->
     <script type="importmap">
       {
         "imports": {
@@ -15,37 +15,38 @@
         }
       }
     </script>
+    <script src="lib/p5.min.js" defer></script>
+    <script src="lib/p5.dom.min.js" defer></script>
 
-    <!-- External CSS -->
+    <!-- CSS Imports -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
     <link rel="stylesheet" href="style.css" />
-
-    <!-- External Libraries -->
-    <script src="lib/p5.min.js" defer></script>
-    <script src="lib/p5.dom.min.js" defer></script>
   </head>
+
   <body>
     <div id="app" class="container">
       <!-- Sidebar -->
       <div id="sidebar">
         <div id="menu-title">
-          <h2>Visuals Menu</h2>
+          <h2>Visualization Menu</h2>
         </div>
         <ul id="visuals-menu"></ul>
+        plea
+        <button id="download">
+          <i class="material-icons">download</i>
+          <p>Download Data</p>
+        </button>
       </div>
 
       <!-- Main Content -->
       <div id="main">
-        <!-- Canvas and Stats Wrapper -->
         <div class="canvas-wrapper">
           <h2 id="visual-title"></h2>
           <div id="canvas"></div>
           <div id="three-canvas"></div>
-
-          <!-- Slider Section Below Canvas -->
           <div id="sliders"></div>
         </div>
 
@@ -63,15 +64,11 @@
             <h2><i class="material-icons"></i></h2>
             <p></p>
           </div>
-          <button id="download">
-            <i class="material-icons">download</i>
-            <p>Download Data</p>
-          </button>
         </div>
       </div>
     </div>
 
-    <!-- Firebase Initialization -->
+    <!-- Database Initialization -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
@@ -88,7 +85,7 @@
       const analytics = getAnalytics(window.app);
     </script>
 
-    <!-- Main sketch file and Helper Functions -->
+    <!-- Main Sketch and Helper Functions -->
     <script type="module" src="sketch.js"></script>
     <script type="module" src="helper-functions.js"></script>
   </body>
