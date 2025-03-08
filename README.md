@@ -4,6 +4,8 @@
 
 The Data Visualization Dashboard is a case study which extends the functionality of an existing p5.js visualization platform. This implementation adds two additional p5.js visuals and also several 3D visualizations built with Three.js. The project blends creative coding with modern web technologies to offer an interactive user experience.
 
+Live Demo: https://data-visualizer-p5.vercel.app/
+
 ## Features
 
 Diverse Visual Modules:
@@ -25,6 +27,8 @@ Downloadable Insights:
 Responsive and Future-Ready:
 
 - Built with modern web standards—HTML5, CSS3, and Material Icons—the dashboard is designed to perform across all devices.
+
+![Demo](./demo.gif)
 
 ## Technologies
 
