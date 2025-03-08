@@ -246,7 +246,7 @@ export const hideElement = (id) => {
 /**
  * Fetches data from Firestore.
  */
-// updated to include the document ID
+// Now updated to include the document ID
 export const fetchData = async (collectionName) => {
   try {
     const { getFirestore, collection, getDocs } = await import(
@@ -263,7 +263,24 @@ export const fetchData = async (collectionName) => {
 };
 
 /**
- * Creates mesh for an
+ * Three.js layout helpers
+ */
+export function getWidth() {
+  const el = document.getElementById("three-canvas");
+  return el ? el.clientWidth : window.innerWidth;
+}
+
+export function getHeight() {
+  const el = document.getElementById("three-canvas");
+  return el ? el.clientHeight : window.innerHeight;
+}
+
+export function getAspect() {
+  return getWidth() / getHeight();
+}
+
+/**
+ * Creates mesh
  */
 export function createTextMesh(text, options, onLoad) {
   const loader = new FontLoader();

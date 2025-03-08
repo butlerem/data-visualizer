@@ -1,13 +1,13 @@
-import { ClimateChange } from "./climate-change.js";
-import { EducationCompletionRate } from "./education-completion-rate.js";
-import { EducationGenderRadar } from "./education-gender-radar.js";
 import { Gallery } from "./gallery.js";
-import { PayGapByJob2017 } from "./pay-gap-by-job.js";
-import { PayGapTimeSeries } from "./pay-gap-time-series.js";
-import { TechDiversityRace } from "./tech-diversity-race.js";
-import { TechDiversityGender } from "./tech-diversity-gender.js";
 import { setupDownloadButton } from "./download.js";
-import { TechDiversityMST } from "./diversity-mst.js";
+import { ClimateChange } from "./vis/climate-change.js";
+import { PayGapByJob2017 } from "./vis/pay-gap-by-job.js";
+import { TechDiversityMST } from "./vis/diversity-mst.js";
+import { PayGapTimeSeries } from "./vis/pay-gap-time-series.js";
+import { TechDiversityRace } from "./vis/tech-diversity-race.js";
+import { TechDiversityGender } from "./vis/tech-diversity-gender.js";
+import { EducationGenderRadar } from "./vis/education-gender-radar.js";
+import { EducationCompletionRate } from "./vis/education-completion-rate.js";
 
 let gallery;
 let canvasContainer;
@@ -23,14 +23,14 @@ window.setup = function () {
   gallery = new Gallery();
 
   // Add the visualisation objects here
-  gallery.addVisual(new TechDiversityGender());
-  gallery.addVisual(new EducationGenderRadar());
   gallery.addVisual(new EducationCompletionRate());
-  gallery.addVisual(new TechDiversityRace());
-  gallery.addVisual(new PayGapByJob2017());
-  gallery.addVisual(new ClimateChange());
-  gallery.addVisual(new PayGapTimeSeries());
+  gallery.addVisual(new TechDiversityGender());
   gallery.addVisual(new TechDiversityMST());
+  gallery.addVisual(new ClimateChange());
+  gallery.addVisual(new PayGapByJob2017());
+  gallery.addVisual(new PayGapTimeSeries());
+  gallery.addVisual(new TechDiversityRace());
+  gallery.addVisual(new EducationGenderRadar());
 
   // Attach download button event listener
   setupDownloadButton(gallery);

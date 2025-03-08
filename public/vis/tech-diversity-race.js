@@ -2,7 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { fetchData } from "./helper-functions.js";
+import {
+  fetchData,
+  getAspect,
+  getHeight,
+  getWidth,
+} from "../helper-functions.js";
 
 export function TechDiversityRace() {
   // Public properties
@@ -12,7 +17,7 @@ export function TechDiversityRace() {
   self.title = "Tech Diversity by Race";
   this.collectionName = "tech_diversity_race";
 
-  // Firestore docs stored in raceDocs, inverted data in dataByCompany
+  // Firestore docs stored in raceDocs
   self.raceDocs = [];
   self.dataByCompany = [];
   self.loaded = false;
@@ -26,10 +31,15 @@ export function TechDiversityRace() {
   // Three.js variables
   let scene, camera, renderer, controls, raceGroup, legend3DGroup;
 
+  // Helpers for canvas dimensions
+  const width = getWidth();
+  const height = getHeight();
+  const aspect = getAspect();
+
   // Colors for slices (hex values)
   const raceColors = [0xab52d5, 0x84d7d9, 0x2a9d8f, 0x4f9df7, 0xf4a261];
 
-  // Preload data asynchronously
+  // Preload data from Firestore
   this.preload = async function () {
     try {
       const data = await fetchData("tech_diversity_race");
@@ -83,6 +93,9 @@ export function TechDiversityRace() {
     // Show Three.js canvas
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) threeCanvasDiv.style.display = "block";
+
+    // Draw: empty function for Three.js but required to prevent errors
+    this.draw = function () {};
 
     initThree();
 
@@ -147,9 +160,6 @@ export function TechDiversityRace() {
     }
   };
 
-  // Draw is handled by the Three.js animation loop
-  this.draw = function () {};
-
   /**
   // invertData(raceDocs): from by race to by company
    */
@@ -199,8 +209,6 @@ export function TechDiversityRace() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
-
-    window.addEventListener("resize", onWindowResize);
   }
 
   /**
@@ -299,36 +307,12 @@ export function TechDiversityRace() {
     scene.add(legend3DGroup);
   }
 
-  /**
-   * Animation loop: updates controls and renders scene
-   */
+  // Update controls and render the scene!
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
-  }
-
-  /**
-   * Adjust camera/render on window resize
-   */
-  function onWindowResize() {
-    camera.aspect = getAspect();
-    camera.updateProjectionMatrix();
-    renderer.setSize(getWidth(), getHeight());
-  }
-
-  // Helpers for #three-canvas size
-  function getWidth() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientWidth : window.innerWidth;
-  }
-  function getHeight() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientHeight : window.innerHeight;
-  }
-  function getAspect() {
-    return getWidth() / getHeight();
   }
 }

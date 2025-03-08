@@ -7,7 +7,7 @@ import {
   drawAxis,
   drawAxisLabels,
   fetchData,
-} from "./helper-functions.js";
+} from "../helper-functions.js";
 
 export function PayGapTimeSeries() {
   // Public properties

@@ -8,7 +8,7 @@ import {
   drawAxisLabels,
   fetchData,
   hideElement,
-} from "./helper-functions.js";
+} from "../helper-functions.js";
 
 export function EducationCompletionRate() {
   // Public properties

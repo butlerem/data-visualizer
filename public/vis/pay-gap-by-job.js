@@ -2,7 +2,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { fetchData, showElement, hideElement } from "./helper-functions.js";
+import {
+  fetchData,
+  showElement,
+  hideElement,
+  getAspect,
+  getHeight,
+  getWidth,
+} from "../helper-functions.js";
 
 export function PayGapByJob2017() {
   // Public properties
@@ -14,7 +21,7 @@ export function PayGapByJob2017() {
   self.loaded = false;
   self.data = [];
 
-  // Stats for stats panel
+  // Statistics for stats panel
   self.stats = [
     { icon: "trending_down", value: "15%", label: "Average Gap" },
     { icon: "work", value: "$120K", label: "Median Salary" },
@@ -23,6 +30,11 @@ export function PayGapByJob2017() {
 
   // Three.js variables
   let scene, camera, renderer, controls, bubblesGroup;
+
+  // Helpers for canvas dimensions
+  const width = getWidth();
+  const height = getHeight();
+  const aspect = getAspect();
 
   // Color mapping for job types
   const jobTypeColors = {
@@ -37,7 +49,7 @@ export function PayGapByJob2017() {
     "Caring, leisure and other service occupations": 0xf4a6a0,
   };
 
-  // Preload data asynchronously
+  // Preload data from Firestore
   this.preload = async function () {
     try {
       self.data = await fetchData("occupation_pay_gap");
@@ -68,12 +80,9 @@ export function PayGapByJob2017() {
 
     initThree();
     createBubbles();
-    createAxisLabels(); // Axis tick marks will be added
+    createAxisLabels();
     animate();
   };
-
-  // Draw is handled by the Three.js animation loop
-  this.draw = function () {};
 
   // Cleanup when destroyed
   this.destroy = function () {
@@ -83,6 +92,9 @@ export function PayGapByJob2017() {
       renderer.domElement.parentNode.removeChild(renderer.domElement);
     }
   };
+
+  // Draw: empty function for Three.js but required to prevent errors
+  this.draw = function () {};
 
   /**
    * Initialize the Three.js scene, camera, renderer, lights, grid, controls
@@ -121,8 +133,6 @@ export function PayGapByJob2017() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
-
-    window.addEventListener("resize", onWindowResize);
   }
 
   /**
@@ -195,62 +205,21 @@ export function PayGapByJob2017() {
           label.rotation.set(...rotation);
           scene.add(label);
         });
-
-        // TODO: Add tick marks for each axis
-        addTickMarks(font);
-
-        // TODO: Add legend to explain visual cues
-        addLegend(font);
       }
     );
   }
 
   /**
-   * Placeholder for adding tick marks
    * TODO: Implement tick mark creation
-   */
-  function addTickMarks(font) {
-    // TODO: Add tick marks for each axis using the provided font
-  }
-
-  /**
-   * Placeholder for adding a legend.
    * TODO: Implement legend to explain color coding etc
    */
-  function addLegend(font) {
-    // TODO: Create and position a legend on the scene
-  }
 
-  /**
-   * Animation loop: updates controls and renders scene
-   */
+  // Update controls and render the scene!
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
-  }
-
-  /**
-   * Adjust camera/render on window resize
-   */
-  function onWindowResize() {
-    camera.aspect = getAspect();
-    camera.updateProjectionMatrix();
-    renderer.setSize(getWidth(), getHeight());
-  }
-
-  // Utility functions for responsiveness
-  function getWidth() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientWidth : window.innerWidth;
-  }
-  function getHeight() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientHeight : window.innerHeight;
-  }
-  function getAspect() {
-    return getWidth() / getHeight();
   }
 }

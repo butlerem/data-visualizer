@@ -7,7 +7,7 @@ import {
   drawAxis,
   drawAxisLabels,
   fetchData,
-} from "./helper-functions.js";
+} from "../helper-functions.js";
 
 export function ClimateChange() {
   // Public properties
@@ -42,7 +42,7 @@ export function ClimateChange() {
   });
   textSize(16);
 
-  // Preload data
+  // Preload data from Firestore
   this.preload = async function () {
     try {
       let rawData = await fetchData("surface_temp");

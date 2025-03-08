@@ -2,7 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { fetchData } from "./helper-functions.js";
+import {
+  fetchData,
+  getAspect,
+  getHeight,
+  getWidth,
+} from "../helper-functions.js";
 
 export function TechDiversityGender() {
   // Public properties
@@ -14,7 +19,7 @@ export function TechDiversityGender() {
   self.loaded = false;
   self.data = [];
 
-  // Stats to be displayed in the stats panel
+  // Statistics for stats panel
   self.stats = [
     { icon: "female", value: "23%", label: "Average Female Representation" },
     { icon: "male", value: "77%", label: "Average Male Representation" },
@@ -23,6 +28,11 @@ export function TechDiversityGender() {
 
   // Three.js variables
   let scene, camera, renderer, controls, barsGroup;
+
+  // Helpers for canvas dimensions
+  const width = getWidth();
+  const height = getHeight();
+  const aspect = getAspect();
 
   // Chart configuration
   const barWidth = 0.5;
@@ -70,14 +80,11 @@ export function TechDiversityGender() {
     // Initialize Three.js and build chart
     initThree();
     createBars();
-    createAxisLabels(); // Axis labels and company labels will be added
+    createAxisLabels();
     animate();
   };
 
-  // Draw is called by p5 but Three.js handles its own loop
-  this.draw = function () {};
-
-  // Destroy: revert to p5 and remove Three.js DOM elements
+  // Destroy: remove Three.js DOM elements, revert to p5 canvas
   this.destroy = function () {
     // Hide Three.js container
     const threeCanvasDiv = document.getElementById("three-canvas");
@@ -92,12 +99,15 @@ export function TechDiversityGender() {
     }
   };
 
-  // Initialize Three.js scene, camera, render, lights, grid, controls
+  // Draw: empty function for Three.js but required to prevent errors
+  this.draw = function () {};
+
+  // Initializing Three.js scene, camera, render, lights, grid, controls
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("0xfff");
+    scene.background = new THREE.Color(0xffffff);
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    camera.position.set(-20, 10, 0);
+    camera.position.set(-20, -3, 0);
     camera.lookAt(0, 0, 0);
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
@@ -115,7 +125,7 @@ export function TechDiversityGender() {
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    /* Add a grid helper - Not needed right now for this chart
+    /* Add a grid helper - Not needed for now
 
     // Compute grid size from data length
     let numCompanies = self.data.length;
@@ -269,28 +279,12 @@ export function TechDiversityGender() {
     }
   }
 
-  // Update controls and render the scene
+  // Update controls and render the scene!
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
-  }
-
-  // Get container width and height
-  function getWidth() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientWidth : window.innerWidth;
-  }
-
-  function getHeight() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientHeight : window.innerHeight;
-  }
-
-  // Compute aspect ratio
-  function getAspect() {
-    return getWidth() / getHeight();
   }
 }

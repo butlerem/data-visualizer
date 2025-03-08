@@ -4,9 +4,10 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Case study 2: Data visualisation</title>
+    <title>Data Visualizer</title>
+    <link rel="shortcut icon" type="image/png" href="./favicon.ico" />
 
-    <!-- External Library Imports -->
+    <!-- Library Imports -->
     <script type="importmap">
       {
         "imports": {
@@ -18,7 +19,7 @@
     <script src="lib/p5.min.js" defer></script>
     <script src="lib/p5.dom.min.js" defer></script>
 
-    <!-- CSS Imports -->
+    <!-- CSS -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -73,6 +74,7 @@
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
       const firebaseConfig = {
+        // public key
         apiKey: "AIzaSyDtkh3uEhxyZrulBExIW8Wruqlx3uFt3wQ",
         authDomain: "data-visualization-8fe38.firebaseapp.com",
         projectId: "data-visualization-8fe38",
@@ -84,9 +86,7 @@
       window.app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(window.app);
     </script>
-
-    <!-- Main Sketch and Helper Functions -->
+    <!-- Main Sketch File -->
     <script type="module" src="sketch.js"></script>
-    <script type="module" src="helper-functions.js"></script>
   </body>
 </html>

@@ -2,7 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { fetchData } from "./helper-functions.js";
+import {
+  fetchData,
+  getAspect,
+  getHeight,
+  getWidth,
+} from "../helper-functions.js";
 
 export function TechDiversityMST() {
   // Public properties
@@ -14,32 +19,30 @@ export function TechDiversityMST() {
   self.loaded = false;
   self.data = [];
 
-  // Stats to be displayed in the stats panel
-  self.stats = [
-    { icon: "female", value: "23%", label: "Average Female Representation" },
-    { icon: "male", value: "77%", label: "Average Male Representation" },
-    { icon: "groups", value: "49%", label: "Highest Female Representation" },
-  ];
+  // Stats panel data is stored later in this case because they are computed
 
   // Three.js variables
   let scene, camera, renderer, controls, nodesGroup, edgesGroup;
+
+  // Helpers for canvas dimensions
+  const width = getWidth();
+  const height = getHeight();
+  const aspect = getAspect();
 
   // Chart configuration
   const nodeRadius = 0.4;
   const sphereSegments = 16;
 
-  // Colors for nodes and edges
   const nodeColor = 0xab52d5;
   const edgeColor = 0x84d7d9;
 
-  // Preload function to fetch and merge both gender and race data
+  // Preload data from Firestore and merge it
   this.preload = async function () {
     try {
       const genderData = await fetchData("tech_diversity_gender");
       const raceData = await fetchData("tech_diversity_race");
 
-      // Merge the datasets based on company name.
-      // Ensure each race record has a company property before comparing.
+      // Merge the datasets and ensure records have a company property
       self.data = genderData.map((genderRecord) => {
         const matchingRace = raceData.find((raceRecord) => {
           return (
@@ -50,7 +53,7 @@ export function TechDiversityMST() {
         });
         return {
           ...genderRecord,
-          ...(matchingRace || {}), // Merge race data if available.
+          ...(matchingRace || {}), // Merge data if available
         };
       });
 
@@ -61,32 +64,63 @@ export function TechDiversityMST() {
     }
   };
 
-  // Setup: hide p5 canvas, show Three.js canvas, and build the MST visual
+  // Setup: hide p5 canvas, show Three.js canvas
   this.setup = function () {
+    // If data not loaded, skip
     if (!self.loaded || !self.data.length) {
       console.log("TechDiversityMST3D: no data loaded yet");
       return;
     }
-    // Hide p5 canvas and show Three.js canvas
-    const p5CanvasDiv = document.getElementById("canvas");
-    if (p5CanvasDiv) p5CanvasDiv.style.display = "none";
-    const threeCanvasDiv = document.getElementById("three-canvas");
-    if (threeCanvasDiv) threeCanvasDiv.style.display = "block";
 
-    // Initialize Three.js scene and groups
+    // Hide p5 canvas
+    const p5CanvasDiv = document.getElementById("canvas");
+    if (p5CanvasDiv) {
+      p5CanvasDiv.style.display = "none";
+    }
+
+    // Show Three.js canvas
+    const threeCanvasDiv = document.getElementById("three-canvas");
+    if (threeCanvasDiv) {
+      threeCanvasDiv.style.display = "block";
+    }
+
+    // Initialize Three.js and build groups
     initThree();
-    // Layout nodes in a circle and compute MST edges
     const nodes = createNodes();
     const mstEdges = computeMST(nodes);
     createEdges(nodes, mstEdges);
     createLabels(nodes);
     animate();
+
+    // Compute stats using the nodes and MST edges
+    const diversityScores = nodes.map((node) => node.diversityScore || 0);
+    const avgDiversityScore =
+      diversityScores.reduce((sum, s) => sum + s, 0) / diversityScores.length;
+
+    const totalMSTLength = mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+    const longestMSTEdge = Math.max(...mstEdges.map((edge) => edge.weight));
+
+    // Update stats panel
+    self.stats = [
+      {
+        icon: "star",
+        value: avgDiversityScore.toFixed(2),
+        label: "Average Diversity Score",
+      },
+      {
+        icon: "timeline",
+        value: totalMSTLength.toFixed(1),
+        label: "Total MST Length",
+      },
+      {
+        icon: "arrow_upward",
+        value: longestMSTEdge.toFixed(1),
+        label: "Largest Difference",
+      },
+    ];
   };
 
-  // Draw (not used since Three.js animates its own loop)
-  this.draw = function () {};
-
-  // Destroy: clean up and revert to p5 canvas
+  // Destroy: remove Three.js DOM elements, revert to p5 canvas
   this.destroy = function () {
     const threeCanvasDiv = document.getElementById("three-canvas");
     if (threeCanvasDiv) {
@@ -99,12 +133,15 @@ export function TechDiversityMST() {
     }
   };
 
+  // Draw: empty function for Three.js but required to prevent errors
+  this.draw = function () {};
+
   // Initialize Three.js scene, camera, renderer, lights, and controls
   function initThree() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("0xfff");
+    scene.background = new THREE.Color("#ffffff"); // white background
     camera = new THREE.PerspectiveCamera(75, getAspect(), 0.1, 1000);
-    camera.position.set(0, 15, 20);
+    camera.position.set(0, 10, 20);
     camera.lookAt(0, 0, 0);
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(getWidth(), getHeight());
@@ -113,12 +150,14 @@ export function TechDiversityMST() {
       threeCanvasDiv.appendChild(renderer.domElement);
     }
 
+    // Add light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
+    // Add groups for nodes and edges
     nodesGroup = new THREE.Group();
     scene.add(nodesGroup);
     edgesGroup = new THREE.Group();
@@ -128,8 +167,38 @@ export function TechDiversityMST() {
     controls.enableDamping = true;
   }
 
-  // Create node objects (spheres) arranged on a circle.
-  // Each node will have a position and a vector of attributes.
+  // Define computeDiversityScore to used to create nodes
+  function computeDiversityScore(company) {
+    // For gender we will assume an ideal of 50/50
+    const female = parseFloat(company.female) || 0;
+    const male = parseFloat(company.male) || 0;
+    const genderDeviation = Math.abs(female - 50) + Math.abs(male - 50);
+
+    // For race we will assume an equal distribution among all 6 categories
+    const raceCategories = [
+      "white",
+      "asian",
+      "latino",
+      "black",
+      "multi",
+      "other",
+    ];
+    let totalRace = 0;
+    raceCategories.forEach((key) => {
+      totalRace += parseFloat(company[key]) || 0;
+    });
+    const idealRace = totalRace / raceCategories.length;
+    let raceDeviation = 0;
+    raceCategories.forEach((key) => {
+      raceDeviation += Math.abs((parseFloat(company[key]) || 0) - idealRace);
+    });
+
+    const totalDeviation = genderDeviation + raceDeviation;
+    return 1 / (totalDeviation + 0.001);
+  }
+
+  // Create nodes in a circle
+  // Each node includes its position and attribute vector
   function createNodes() {
     const numCompanies = self.data.length;
     const radius = Math.max(numCompanies * 0.6, 10);
@@ -138,9 +207,7 @@ export function TechDiversityMST() {
 
     for (let i = 0; i < numCompanies; i++) {
       const doc = self.data[i];
-      // Define a vector of attributes for distance calculations.
-      // Here we assume your document has keys: female, male, white, asian, latino, black, multi, other.
-      // You can adjust or add more dimensions as needed.
+      // Define vector of attributes for each category
       const attr = [
         parseFloat(doc.female) || 0,
         parseFloat(doc.male) || 0,
@@ -151,7 +218,8 @@ export function TechDiversityMST() {
         parseFloat(doc.multi) || 0,
         parseFloat(doc.other) || 0,
       ];
-      // Position on a circle (x,z plane); y can be 0.
+
+      // Position on a circle (x,z plane)
       const angle = i * angleStep;
       const x = radius * Math.cos(angle);
       const z = radius * Math.sin(angle);
@@ -168,18 +236,22 @@ export function TechDiversityMST() {
       sphere.position.copy(position);
       nodesGroup.add(sphere);
 
-      // Store node info
+      // Compute diversity score for this node
+      const diversityScore = computeDiversityScore(doc);
+
+      // Store information about the node
       nodes.push({
         id: i,
         company: doc.company || "Unknown",
         pos: position,
         attr: attr,
+        diversityScore: diversityScore,
       });
     }
     return nodes;
   }
 
-  // Compute Euclidean distance between two attribute vectors
+  // Compute the Euclidean distance between two attribute vectors
   function distance(attrA, attrB) {
     let sum = 0;
     for (let i = 0; i < attrA.length; i++) {
@@ -189,36 +261,29 @@ export function TechDiversityMST() {
     return Math.sqrt(sum);
   }
 
-  // Compute MST using a simple Kruskal algorithm.
-  // Returns an array of edges where each edge is { a: nodeIndex, b: nodeIndex, weight: number }.
+  // Compute a minimum spanning tree using Kruskal's algorithm
   function computeMST(nodes) {
     const numNodes = nodes.length;
     const edges = [];
-    // Compute complete graph edges (you may choose to limit this for large datasets)
     for (let i = 0; i < numNodes; i++) {
       for (let j = i + 1; j < numNodes; j++) {
         const d = distance(nodes[i].attr, nodes[j].attr);
         edges.push({ a: i, b: j, weight: d });
       }
     }
-    // Sort edges by weight
     edges.sort((e1, e2) => e1.weight - e2.weight);
 
-    // Union-Find (Disjoint Set) structure for cycle detection
     const parent = Array(numNodes)
       .fill(0)
       .map((_, i) => i);
-
     function find(i) {
       if (parent[i] !== i) parent[i] = find(parent[i]);
       return parent[i];
     }
-
     function union(i, j) {
       parent[find(i)] = find(j);
     }
 
-    // Kruskal’s algorithm: pick the smallest edge that doesn't create a cycle.
     const mstEdges = [];
     for (let edge of edges) {
       if (find(edge.a) !== find(edge.b)) {
@@ -230,7 +295,7 @@ export function TechDiversityMST() {
     return mstEdges;
   }
 
-  // Create edges (lines) between nodes for the MST
+  // Create edges between nodes for the MST
   function createEdges(nodes, mstEdges) {
     const material = new THREE.LineBasicMaterial({ color: edgeColor });
     mstEdges.forEach((edge) => {
@@ -243,7 +308,7 @@ export function TechDiversityMST() {
     });
   }
 
-  // Create labels for each company node using the FontLoader
+  // Create labels for each company node
   function createLabels(nodes) {
     const loader = new FontLoader();
     loader.load(
@@ -257,10 +322,8 @@ export function TechDiversityMST() {
             height: 0.05,
           });
           const label = new THREE.Mesh(labelGeo, textMaterial);
-          // Position the label slightly above the node
           label.position.copy(node.pos);
           label.position.y += nodeRadius + 0.2;
-          // Optionally rotate the label for better readability
           label.rotation.y = -Math.PI / 4;
           scene.add(label);
         });
@@ -268,25 +331,12 @@ export function TechDiversityMST() {
     );
   }
 
-  // Animation loop: update controls and render the scene
+  // Update controls and render the scene!
   function animate() {
     requestAnimationFrame(animate);
     if (controls) controls.update();
     if (renderer && scene && camera) {
       renderer.render(scene, camera);
     }
-  }
-
-  // Helpers to get canvas dimensions and aspect ratio
-  function getWidth() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientWidth : window.innerWidth;
-  }
-  function getHeight() {
-    const el = document.getElementById("three-canvas");
-    return el ? el.clientHeight : window.innerHeight;
-  }
-  function getAspect() {
-    return getWidth() / getHeight();
   }
 }
