@@ -18,6 +18,12 @@ export function setupDownloadButton(gallery) {
       }
 
       const collectionName = gallery.selectedVisual.collectionName;
+
+      // Temporary fix for aggregated data not available to download yet
+      if (collectionName === "tech_diversity_mst") {
+        alert("Oh no, we didn't get to that yet :( Please check back later!");
+        return;
+      }
       const data = await fetchData(collectionName);
 
       if (!data || data.length === 0) {

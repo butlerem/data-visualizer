@@ -2,23 +2,38 @@
 
 ## Overview
 
-This project is a case study in data visualisation where users can explore eight different visuals. Each visual is either built using p5.js or Three.js. The goal of this project is to combine creative coding with data-driven insights in an engaging and interactive interface.
+The Data Visualization Dashboard is a case study which extends the functionality of an existing p5.js visualization platform. This implementation adds two additional p5.js visuals and also several 3D visualizations built with Three.js. The project blends creative coding with modern web technologies to offer an interactive user experience.
 
 ## Features
 
-- Multiple Visuals: Eight different visualisation modules utilizing p5.js and Three.js.
-- Interactive UI: - Left Navigation Menu: Browse and select different visualisations. - Download Functionality: Export the current dataset as a JSON file. - Central Gallery: Displays the active visual. - Stats Panel: Automatically updates to reflect live data about the visual. - Customisable Controls: Sliders and dropdown menus to adjust visual parameters.
-- Real-time Data Analytics: Integration with Firebase for analytics tracking.
-- Responsive Design: Built with modern web standards ensuring compatibility across devices.
+Diverse Visual Modules:
+
+- Eight distinct visualization modules. Some are powered by p5.js and others use Three.js for 3D interactivity
+
+Interactive Experience:
+
+- The dashboard features a left-side navigation menu for easy switching between visuals, a central gallery that dynamically displays your selected visual, and a control panel with sliders and dropdowns to adjust visualizations. The stats panel updates live to reflect key data points as you interact with the visuals.
+
+Seamless Data Integration:
+
+- Cloud Firestore is used for dynamic data fetching.
+
+Downloadable Insights:
+
+- Using the download button you can export the current dataset as a JSON file.
+
+Responsive and Future-Ready:
+
+- Built with modern web standards—HTML5, CSS3, and Material Icons—the dashboard is designed to perform across all devices.
 
 ## Technologies
 
-- JavaScript for dynamic content
-- p5.js for creative coding visualisations
-- Three.js for 3D visualisations
-- Firebase for backend analytics and data handling
-- HTML5 & CSS3 for structure and styling
-- Material Icons for user interface elements
+JavaScript: For dynamic content and logic.
+p5.js: Creative coding and 2D visualisations to life.
+Three.js: For immersive 3D visualisation experiences.
+Firebase: Handling backend data seamlessly.
+HTML5 & CSS3: Modern, responsive design.
+Material Icons: Adding intuitive UI elements.
 
 # Installation
 
@@ -42,4 +57,4 @@ This project is licensed under the MIT License. You are free to use, modify, and
 
 # Contact
 
-For any inquiries or feedback, please reach out via: butlerem01@gmail.com
+For any inquiries or feedback, feel free to contact me at: butlerem01@gmail.com
